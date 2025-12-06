@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Desktop } from './components/Desktop';
 import { MenuBar } from './components/MenuBar';
 import { Dock } from './components/Dock';
@@ -49,7 +49,7 @@ function loadIconPositions(): Record<string, { x: number; y: number }> {
     if (legacy) {
       const icons = JSON.parse(legacy);
       const positions: Record<string, { x: number; y: number }> = {};
-      icons.forEach((icon: any) => {
+      icons.forEach((icon: { name: string; position: { x: number; y: number } }) => {
         positions[icon.name] = icon.position;
       });
       return positions;
@@ -64,7 +64,7 @@ function OS() {
   // Windows reset on refresh (not persisted)
   const [windows, setWindows] = useState<WindowState[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [topZIndex, setTopZIndex] = useState(100);
+  const topZIndexRef = useRef(100);
 
   // FileSystem Integration
   const { listDirectory, resolvePath, getNodeAtPath } = useFileSystem();
@@ -95,7 +95,10 @@ function OS() {
     });
   }, [listDirectory, resolvePath, iconPositions]);
 
-  const openWindow = useCallback((type: string, data?: any) => {
+  // Ref to break circular dependency in openWindow (Terminal calling openWindow)
+  const openWindowRef = useRef<(type: string, data?: { path?: string }) => void>(() => { });
+
+  const openWindow = useCallback((type: string, data?: { path?: string }) => {
     let content: React.ReactNode;
     let title: string;
 
@@ -126,7 +129,8 @@ function OS() {
         break;
       case 'terminal':
         title = 'Terminal';
-        content = <Terminal onLaunchApp={(id, args) => openWindow(id, { path: args?.[0] })} />;
+        // Use ref to avoid circular dependency in useCallback
+        content = <Terminal onLaunchApp={(id, args) => openWindowRef.current(id, { path: args?.[0] })} />;
         break;
       default:
         title = type.charAt(0).toUpperCase() + type.slice(1);
@@ -134,7 +138,8 @@ function OS() {
     }
 
     setWindows(prevWindows => {
-      const newZIndex = topZIndex + 1;
+      topZIndexRef.current += 1;
+      const newZIndex = topZIndexRef.current;
       const newWindow: WindowState = {
         id: `${type}-${Date.now()}`,
         title,
@@ -145,10 +150,14 @@ function OS() {
         size: { width: 900, height: 600 },
         zIndex: newZIndex,
       };
-      setTopZIndex(newZIndex);
       return [...prevWindows, newWindow];
     });
-  }, [topZIndex]);
+  }, []); // Stable dependency
+
+  // Update ref
+  useEffect(() => {
+    openWindowRef.current = openWindow;
+  }, [openWindow]);
 
   const closeWindow = useCallback((id: string) => {
     setWindows(prevWindows => prevWindows.filter(w => w.id !== id));
@@ -165,8 +174,8 @@ function OS() {
         const topWindow = visibleWindows.reduce((max, w) =>
           w.zIndex > max.zIndex ? w : max, visibleWindows[0]
         );
-        const newZIndex = topZIndex + 1;
-        setTopZIndex(newZIndex);
+        topZIndexRef.current += 1;
+        const newZIndex = topZIndexRef.current;
         return updated.map(w =>
           w.id === topWindow.id ? { ...w, zIndex: newZIndex } : w
         );
@@ -174,7 +183,7 @@ function OS() {
 
       return updated;
     });
-  }, [topZIndex]);
+  }, []); // topZIndexRef is stable
 
   const maximizeWindow = useCallback((id: string) => {
     setWindows(prevWindows => prevWindows.map(w =>
@@ -183,12 +192,12 @@ function OS() {
   }, []);
 
   const focusWindow = useCallback((id: string) => {
-    setTopZIndex(prevZIndex => {
-      const newZIndex = prevZIndex + 1;
-      setWindows(prevWindows => prevWindows.map(w =>
+    setWindows(prevWindows => {
+      topZIndexRef.current += 1;
+      const newZIndex = topZIndexRef.current;
+      return prevWindows.map(w =>
         w.id === id ? { ...w, zIndex: newZIndex, isMinimized: false } : w
-      ));
-      return newZIndex;
+      );
     });
   }, []);
 

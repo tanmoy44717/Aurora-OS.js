@@ -1,5 +1,5 @@
 import { Palette, Monitor, Bell, Shield, Wifi, User, HardDrive, Zap, Info, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppContext } from './AppContext';
 import { Checkbox } from './ui/checkbox';
 import { AppTemplate } from './apps/AppTemplate';
@@ -58,16 +58,16 @@ export function Settings() {
   const [customColor, setCustomColor] = useState(accentColor);
 
   // About section state
-  const [storageStats, setStorageStats] = useState(() => getStorageStats());
+  const storageStats = useMemo(() => {
+    return activeSection === 'about' ? getStorageStats() : {
+      softMemory: { keys: 0, bytes: 0 },
+      hardMemory: { keys: 0, bytes: 0 },
+      total: { keys: 0, bytes: 0 }
+    };
+  }, [activeSection]);
+
   const [showSoftConfirm, setShowSoftConfirm] = useState(false);
   const [showHardConfirm, setShowHardConfirm] = useState(false);
-
-  // Refresh storage stats when About section is active
-  useEffect(() => {
-    if (activeSection === 'about') {
-      setStorageStats(getStorageStats());
-    }
-  }, [activeSection]);
 
   const handleCustomColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

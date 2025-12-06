@@ -41,16 +41,20 @@ window.ResizeObserver = ResizeObserverMock;
 // Mock motion/react
 vi.mock('motion/react', () => ({
     motion: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         div: ({ children, ...props }: any) => {
-            // Filter props
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { initial, animate, exit, transition, whileHover, whileTap, ...validProps } = props;
             return <div {...validProps}>{children}</div>;
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         button: ({ children, ...props }: any) => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { initial, animate, exit, transition, whileHover, whileTap, ...validProps } = props;
             return <button {...validProps}>{children}</button>;
         },
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     AnimatePresence: ({ children }: any) => <>{children}</>,
 }));
 
@@ -67,9 +71,6 @@ describe('Aurora OS Integration', () => {
         const buttons = screen.getAllByRole('button');
         expect(buttons.length).toBeGreaterThan(0);
 
-        // Try to find specific app (Finder) if possible
-        // Note: aria-label should be set on buttons in Dock.tsx
-        // If getting by name fails, we fallback to just checking existence for smoke test
         const finder = buttons.find(b => b.getAttribute('aria-label') === 'Finder');
         expect(finder).toBeInTheDocument();
     });
@@ -79,6 +80,4 @@ describe('Aurora OS Integration', () => {
         expect(localStorageMock.getItem).toHaveBeenCalledWith('aurora-os-settings');
         expect(localStorageMock.getItem).toHaveBeenCalledWith('aurora-filesystem');
     });
-
-
 });

@@ -68,7 +68,7 @@ export function Terminal({ onLaunchApp }: TerminalProps) {
   };
 
   const getAutocompleteCandidates = (partial: string, isCommand: boolean): string[] => {
-    let candidates: string[] = [];
+    const candidates: string[] = [];
 
     if (isCommand) {
       // 1. Search Builtins
@@ -336,7 +336,7 @@ export function Terminal({ onLaunchApp }: TerminalProps) {
         setInput('');
         return;
 
-      default:
+      default: {
         // Check PATH for executable
         let foundPath: string | null = null;
 
@@ -393,6 +393,7 @@ export function Terminal({ onLaunchApp }: TerminalProps) {
           output = [`${command}: command not found`];
           error = true;
         }
+      }
     }
 
     setHistory([...history, { command: trimmed, output, error }]);
