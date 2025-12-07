@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -107,6 +107,7 @@ export function FileManager({ initialPath }: { initialPath?: string }) {
   };
 
   const handleDragStart = (e: React.DragEvent, item: FileNode) => {
+    console.log('Drag started:', item.id);
     e.dataTransfer.setData('application/json', JSON.stringify({
       id: item.id,
       name: item.name,
@@ -135,21 +136,35 @@ export function FileManager({ initialPath }: { initialPath?: string }) {
     e.preventDefault();
     setDragTargetId(null);
 
-    if (targetItem.type !== 'directory') return;
+    // If target is a directory, consume the event (drop INTO directory)
+    if (targetItem.type === 'directory') {
+      e.stopPropagation();
+    } else {
+      // If target is file, let it bubble to container (drop INTO current path)
+      return;
+    }
 
     try {
       const data = JSON.parse(e.dataTransfer.getData('application/json'));
+      console.log('Drop data:', data);
       if (data.id && data.id !== targetItem.id) {
         // Resolve destination path (currentPath + targetName)
         const destPath = currentPath === '/'
           ? `/${targetItem.name}`
           : `${currentPath}/${targetItem.name}`;
 
+        console.log('Moving to:', destPath);
         // Execute robust ID-based move
-        moveNodeById(data.id, destPath);
+        const success = moveNodeById(data.id, destPath);
+        if (success) {
+          toast.success(`Moved ${data.name} to ${targetItem.name}`);
+        } else {
+          toast.error(`Failed to move ${data.name} (Duplicate or Locked)`);
+        }
       }
     } catch (err) {
       console.error('Failed to parse drag data', err);
+      toast.error('Move failed: Invalid data');
     }
   };
 
@@ -184,7 +199,7 @@ export function FileManager({ initialPath }: { initialPath?: string }) {
   });
 
   // Sidebar configuration
-  const fileManagerSidebar = {
+  const fileManagerSidebar = useMemo(() => ({
     sections: [
       {
         title: 'Favourites',
@@ -272,7 +287,7 @@ export function FileManager({ initialPath }: { initialPath?: string }) {
         ]
       },
     ]
-  };
+  }), [homePath, navigateTo, moveNodeById]);
 
   const toolbar = (
     <div className="flex items-center justify-between w-full">
@@ -320,8 +335,47 @@ export function FileManager({ initialPath }: { initialPath?: string }) {
     </div>
   );
 
+  // State for container drop zone visual feedback
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  // Handle drop on the background (current directory)
+  const handleContainerDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (!isDraggingOver) setIsDraggingOver(true);
+  };
+
+  const handleContainerDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDraggingOver(false);
+  };
+
+  const handleContainerDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingOver(false);
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('application/json'));
+      if (data.id) {
+        moveNodeById(data.id, currentPath);
+      }
+    } catch (err) {
+      console.error('Failed to handle container drop', err);
+    }
+  };
+
   const content = (
-    <div ref={containerRef} className="flex-1 overflow-auto p-6">
+    <div
+      ref={containerRef}
+      className="flex-1 overflow-y-auto p-6 transition-colors duration-200"
+      style={{
+        backgroundColor: isDraggingOver ? `${accentColor}10` : undefined, // 10% opacity
+        boxShadow: isDraggingOver ? `inset 0 0 0 2px ${accentColor}80` : undefined // 50% opacity border
+      }}
+      onDragOver={handleContainerDragOver}
+      onDragLeave={handleContainerDragLeave}
+      onDrop={handleContainerDrop}
+    >
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-full text-white/40">
           <FolderOpen className="w-16 h-16 mb-4" />
