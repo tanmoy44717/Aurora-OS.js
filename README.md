@@ -60,25 +60,18 @@ npm test
 
 ## Release Notes
  
-### v0.7.5
+### v0.7.6
 
-#### App Store Infrastructure & Binary Simulation
-- **Virtual Binary System**: Apps are now treated as "installed binaries" located in `/usr/bin` (e.g., `/usr/bin/music`, `/usr/bin/notepad`).
-- **Launch Guards**: The OS and Finder now verify the existence of the app binary before attempting to launch it, simulating a real file system dependency.
-- **App Store Foundation**: Laid the groundwork for a future App Store by decoupling app logic from system availability—apps can now be "uninstalled" (binary removed) or "installed" dynamically.
+### Window Management
+- **Maximize**: Fixed a bug where maximizing a window would not cover the entire screen.
 
-#### Music App Restoration & Fixes
-- **Restored "Real-Life" App Behavior**: Music playback is now strictly gated by the application window. Double-clicking a file opens the app, which then initiates playback. This prevents "headless" background audio and resolves infinite restart loops.
-- **Context Switching Fixed**: Resolved an issue where switching between songs with the same index (e.g., in different playlists) would fail to update the audio. The engine now uses unique Song IDs for reliable tracking.
+#### Modular Menu System
+- **Per-App Menu Configurations**: Fully modularized the menu bar architecture. Applications now define their own specific menus (File, Edit, View, etc.) and actions, replaced the monolithic hardcoded system with a flexible `AppMenuConfig` registry.
+- **Dynamic Action Dispatching**: Menu items now dispatch standardized `app-menu-action` events, allowing individual apps to handle commands like "Save", "Rotate", or "Play" without tightly coupling to the system shell.
 
-#### Notepad & Shell Integration
-- **Shell Script Support**: Added native support for `.sh` files.
-- **Bash Syntax Highlighting**: Integrated `prism-bash` for accurate syntax coloring of shell scripts.
-- **File Association**: `.sh` files now automatically open in Notepad from Desktop and Finder.
-
-#### System Improvements
-- **Window Management Logic**: Fixed a bug where opening a file in an already-open app would update the data but not refresh the window content. Existing windows now correctly re-mount with new file data.
-
+#### Polished Empty States
+- **Enhanced Placeholder UI**: Replaced generic "Coming Soon" text with polished `EmptyState` components featuring app-specific iconography and descriptive messaging.
+- **Coverage**: Applied to placeholder apps (Mail, Calendar, Videos) and "Work in Progress" sections within Settings (Network, Security, Storage) and DevCenter.
 
 [View to-do list](TO-DO.md)
 
