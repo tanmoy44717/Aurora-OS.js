@@ -95,6 +95,7 @@ Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 
 - **Apps Main Menu**: Standardized to be included in [app].tsx files.
 - **System States**: Improved the restart/log-out/shutdown logic.
+- **Apps**: Added user context to apps, so they can access user-specific data (eg. user specific home directory, user specific downloads directory, etc.)
 
 ### Fixed
 
