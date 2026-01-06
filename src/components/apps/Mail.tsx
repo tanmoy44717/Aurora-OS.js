@@ -1,9 +1,8 @@
 import { AppTemplate } from "./AppTemplate";
-import { Inbox, Trash2, Archive, Star, Search, Reply, Forward, Paperclip, Download } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Inbox, Trash2, Archive, Star, Search, Reply, Forward, Paperclip, Download, Eye, EyeOff, LogOut } from "lucide-react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useAppContext } from "../AppContext";
 import { useSessionStorage } from "@/hooks/useSessionStorage.ts";
-import { useElementSize } from "@/hooks/useElementSize.ts";
 import { cn } from "../ui/utils";
 import { GlassInput } from "../ui/GlassInput";
 import { GlassButton } from "../ui/GlassButton";
@@ -12,6 +11,8 @@ import remarkGfm from "remark-gfm";
 import { useI18n } from "@/i18n";
 import { useFileSystem } from "../FileSystemContext";
 import { notify } from "@/services/notifications";
+import { useThemeColors } from "@/hooks/useThemeColors";
+import { AppMenuConfig } from "@/types.ts";
 
 export interface EmailAttachment {
   id: string;
@@ -27,7 +28,7 @@ export interface Email {
   fromEmail: string;
   subject: string;
   body: string;
-  timestamp: Date;
+  timestamp: Date | string; // Allow string for JSON parsing
   read: boolean;
   starred: boolean;
   archived: boolean;
@@ -35,227 +36,276 @@ export interface Email {
   attachments?: EmailAttachment[];
 }
 
-const mockEmails: Email[] = [
-  {
-    id: "1",
-    from: "Sarah Chen",
-    fromEmail: "sarah.chen@company.com",
-    subject: "Q4 Project Update - Review Required",
-    body: `Hi there,
-
-I hope this email finds you well. I wanted to share the **latest updates** on our Q4 project timeline.
-
-Key highlights:
-
-- **Phase 1:** Completed ahead of schedule
-- *Phase 2:* Currently in progress, 75% done
-- **Phase 3:** Scheduled to start next week
-
-Please review the attached documents and let me know if you have any concerns. We need your approval by **Friday EOD**.
-
-Best regards,
-Sarah`,
-    timestamp: new Date("2024-01-04T10:30:00"),
-    read: false,
-    starred: true,
-    archived: false,
-    deleted: false,
-    attachments: [
-      {
-        id: "att-1-1",
-        name: "Q4_Project_Timeline.txt",
-        size: 245600,
-        type: "application/text",
-        content:
-          "Q4 Project Timeline\n\nPhase 1: Infrastructure Setup (Completed)\nPhase 2: Development (In Progress - 75%)\nPhase 3: Testing & Deployment (Scheduled)\n\nDetailed timeline and milestones attached.",
-      },
-      {
-        id: "att-1-2",
-        name: "Budget_Report.txt",
-        size: 128400,
-        type: "application/text",
-        content:
-          "Budget Report Q4\n\nTotal Budget: $500,000\nSpent: $375,000 (75%)\nRemaining: $125,000\n\nBreakdown by department included.",
-      },
-    ],
-  },
-  {
-    id: "2",
-    from: "DevOps Team",
-    fromEmail: "devops@internal.system",
-    subject: "System Maintenance Scheduled - Tomorrow 2AM",
-    body: `Dear Team,
-
-This is an automated notification regarding scheduled system maintenance.
-
-**Maintenance Window:**
-
-- **Date:** January 5, 2024
-- **Time:** 2:00 AM - 4:00 AM EST
-- *Expected Downtime:* Approximately 2 hours
-
-During this time, the following services will be **unavailable**:
-
-- Authentication servers
-- Database clusters
-- API endpoints
-
-Please plan accordingly. *All services will be restored by 4:00 AM.*
-
-Thank you for your patience.`,
-    timestamp: new Date("2024-01-04T09:15:00"),
-    read: true,
-    starred: false,
-    archived: false,
-    deleted: false,
-  },
-  {
-    id: "3",
-    from: "Michael Rodriguez",
-    fromEmail: "mike.r@external.com",
-    subject: "Re: Collaboration Opportunity",
-    body: `Hi,
-
-Thank you for reaching out! I'm *very interested* in exploring this collaboration opportunity.
-
-I've reviewed your proposal and I think it aligns perfectly with our current goals. Here are my thoughts:
-
-1. **Timeline:** The proposed 6-month timeline seems reasonable
-2. **Budget:** We might need to discuss adjustments for Q2
-3. *Resources:* I can commit 2 senior developers and 1 designer
-
-Would you be available for a call next week to discuss the details? I'm free on **Tuesday afternoon** or **Thursday morning**.
-
-Looking forward to working together!
-
-Best,
-Michael`,
-    timestamp: new Date("2024-01-03T16:45:00"),
-    read: true,
-    starred: true,
-    archived: false,
-    deleted: false,
-  },
-  {
-    id: "4",
-    from: "Newsletter Team",
-    fromEmail: "newsletter@tech-weekly.com",
-    subject: "Your Weekly Tech Digest - January Edition",
-    body: `Hello Tech Enthusiast!
-
-Welcome to this week's edition of **Tech Weekly Digest**.
-
-**📱 Top Stories This Week:**
-
-- **AI Breakthrough:** New model achieves 99% accuracy in medical diagnosis
-- *Quantum Computing:* Major advancement in error correction announced
-- **Web Development:** React 19 beta released with exciting new features
-- Cybersecurity alert: Critical vulnerability patched in popular framework
-
-*Featured Article:*
-
-**"The Future of Remote Work"** - An in-depth analysis of how workplace dynamics are evolving in 2024. Companies are adopting *hybrid models* at an unprecedented rate.
-
-Click below to read the full newsletter on our website.
-
-Happy reading! 📚`,
-    timestamp: new Date("2024-01-02T08:00:00"),
-    read: false,
-    starred: false,
-    archived: false,
-    deleted: false,
-    attachments: [
-      {
-        id: "att-4-1",
-        name: "Tech_Weekly_January.text",
-        size: 1024000,
-        type: "application/text",
-        content:
-          "Tech Weekly Digest - January Edition\n\nFull newsletter with articles, interviews, and technology trends.",
-      },
-    ],
-  },
-];
-
 export function Mail({ owner }: { owner?: string }) {
   const { t } = useI18n();
-  const { createFile, resolvePath } = useFileSystem();
+  const { createFile, resolvePath, readFile, writeFile, createDirectory, currentUser: globalUser } = useFileSystem();
+  const { activeUser: desktopUser, accentColor } = useAppContext();
+  const { getBackgroundColor, blurStyle } = useThemeColors();
+
+  // Determine effective user (support for `sudo mail` or `su user mail`)
+  const activeUser = owner || desktopUser || globalUser || 'guest';
+  const userHome = activeUser === 'root' ? '/root' : `/home/${activeUser}`;
+
+  // File System Paths - File Authority
+  const configDir = `${userHome}/.Config`;
+  const mailConfigPath = `${configDir}/mail.json`;
+  const inboxPath = `${configDir}/inbox.json`;
+
+  // Authentication state (Session)
+  const [sessionUser, setSessionUser] = useSessionStorage<string | null>(
+    "mail-current-user",
+    null,
+    activeUser
+  );
+
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // Soft Memory (UI State)
   const [activeMailbox, setActiveMailbox] = useSessionStorage(
     "mail-active-mailbox",
     "inbox",
-    owner
+    activeUser
   );
-  const [storedEmails, setStoredEmails] = useSessionStorage<Email[]>(
-    "mail-emails",
-    mockEmails,
-    owner
-  );
-  const [selectedEmailId, setSelectedEmailId] = useState<string | null>(
-    storedEmails[0]?.id || null
-  );
-  const [searchQuery, setSearchQuery] = useState("");
-  const { accentColor } = useAppContext();
 
-  // Ensure timestamps are Date objects (they become strings when stored in localStorage)
+  // Hard Memory (Data)
+  const [storedEmails, setStoredEmails] = useState<Email[]>([]);
+  const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // --- Auto-Login Logic ---
+  useEffect(() => {
+    const checkAutoLogin = async () => {
+      // 1. Check for .Config/mail.json (Hacking Gameplay)
+      const mailConfigContent = readFile(mailConfigPath, activeUser);
+      if (mailConfigContent) {
+        try {
+          const config = JSON.parse(mailConfigContent);
+          if (config.email) {
+            setSessionUser(config.email);
+            setAuthLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.error("Failed to parse mail.json", e);
+        }
+      }
+
+      // 2. Fallback: Check if user is already logged in via session
+      if (sessionUser) {
+        setAuthLoading(false);
+        return;
+      }
+
+      setAuthLoading(false);
+    };
+
+    checkAutoLogin();
+  }, [readFile, setSessionUser, mailConfigPath, sessionUser, activeUser]);
+
+
+  // --- Data Loading Logic ---
+  const loadEmails = useCallback(() => {
+    if (!sessionUser) return;
+
+    // 1. Try reading from .Config/inbox.json
+    const inboxContent = readFile(inboxPath, activeUser);
+    if (inboxContent) {
+      try {
+        const data = JSON.parse(inboxContent);
+        if (Array.isArray(data.emails)) {
+          setStoredEmails(data.emails);
+          if (data.emails.length > 0) {
+            setSelectedEmailId(curr => curr || data.emails[0].id);
+          }
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to parse inbox.json", e);
+      }
+    }
+
+    // 2. Fallback: Migration from legacy localStorage (global_mailbox)
+    const legacyMailbox = localStorage.getItem("global_mailbox");
+    if (legacyMailbox) {
+      try {
+        const parsed = JSON.parse(legacyMailbox);
+        const emails = parsed.emails;
+        if (Array.isArray(emails) && emails.length > 0) {
+          setStoredEmails(emails);
+          setSelectedEmailId((curr) => curr || emails[0].id);
+
+          // Save to file system immediately
+          createDirectory(userHome, ".Config", activeUser);
+          writeFile(inboxPath, JSON.stringify({ emails }, null, 2), activeUser);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to migrate legacy mailbox", e);
+      }
+    }
+
+    // 3. Empty state
+    setStoredEmails([]);
+  }, [sessionUser, readFile, inboxPath, userHome, activeUser, createDirectory, writeFile]);
+
+  // Load emails when user changes or mounts
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadEmails();
+  }, [loadEmails]);
+
+  // --- Data Saving Logic ---
+  // Any change to storedEmails should ideally persist to disk.
+  // We use a useEffect with a small debounce or direct write could work.
+  // Given this is a local simulator, direct write on change is fine for now.
+  const persistEmails = useCallback((emailsToSave: Email[]) => {
+    if (!sessionUser) return;
+
+    // Ensure dir exists
+    createDirectory(userHome, '.Config', activeUser);
+
+    const data = {
+      emails: emailsToSave,
+      updatedAt: new Date().toISOString()
+    };
+
+    writeFile(inboxPath, JSON.stringify(data, null, 2), activeUser);
+  }, [sessionUser, userHome, activeUser, createDirectory, writeFile, inboxPath]);
+
+  // Only persist when emails actually change length or content. 
+  // To avoid circular loops, we will wrap state setters instead of a broad useEffect.
+
+  const updateEmails = (newEmails: Email[]) => {
+    setStoredEmails(newEmails);
+    persistEmails(newEmails);
+  };
+
+  // Responsive container measurement handled by AppTemplate
+  // const [containerRef, { width }] = useElementSize();
+  // const showSidebar = width >= 450;
+
+  // Handle login - supports both TrustMail and local accounts
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError("");
+
+    if (!loginEmail.trim()) {
+      setAuthError("Please enter your email");
+      return;
+    }
+
+    if (!loginPassword) {
+      setAuthError("Please enter your password");
+      return;
+    }
+
+    setAuthLoading(true);
+    setTimeout(() => {
+      // 1. Check Legacy/Web localStorage accounts first (TrustMail)
+      // We still use these because the website writes to them.
+      // But now we ALSO write to FS.
+
+      let foundAccount = null;
+      let provider = '';
+
+      const trustmailAccounts = JSON.parse(localStorage.getItem("trustmail_accounts") || "{}");
+      const mailAccounts = JSON.parse(localStorage.getItem("mail_accounts") || "{}"); // Legacy local
+
+      if (trustmailAccounts[loginEmail]) {
+        foundAccount = trustmailAccounts[loginEmail];
+        provider = 'trustmail';
+      } else if (mailAccounts[loginEmail]) {
+        foundAccount = mailAccounts[loginEmail];
+        provider = 'local';
+      }
+
+      if (foundAccount) {
+        if (foundAccount.password !== loginPassword) {
+          setAuthLoading(false);
+          setAuthError("Invalid password");
+          return;
+        }
+
+        // Successful Login
+        setSessionUser(loginEmail);
+
+        // SYNC: Update the global website session so TrustMail site knows we are logged in
+        if (provider === 'trustmail') {
+          localStorage.setItem('global_mail_account', loginEmail);
+        }
+
+        // Write to FS for auto-login next time (Persistence)
+        createDirectory(userHome, '.Config', activeUser);
+        const mailConfig = {
+          email: loginEmail,
+          password: loginPassword,
+          provider: provider,
+          lastLogin: new Date().toISOString()
+        };
+        writeFile(mailConfigPath, JSON.stringify(mailConfig, null, 2), activeUser);
+
+        setAuthLoading(false);
+        setLoginEmail("");
+        setLoginPassword("");
+        return;
+      }
+
+      setAuthLoading(false);
+      setAuthError("Account not found");
+    }, 600);
+  };
+
+
+  const handleLogout = () => {
+    setSessionUser(null);
+    setLoginEmail("");
+    setLoginPassword("");
+    setAuthError("");
+    setStoredEmails([]);
+
+    // SYNC: Clear global website session
+    localStorage.removeItem('global_mail_account');
+
+    // Clear auto-login file
+    writeFile(mailConfigPath, "", activeUser); // Write empty or delete.
+  };
+
+  // Ensure timestamps are Date objects (they become strings when stored in JSON)
   const emails = useMemo(() => {
     return storedEmails.map((email) => ({
       ...email,
-      timestamp:
-        email.timestamp instanceof Date
-          ? email.timestamp
-          : new Date(email.timestamp),
+      timestamp: new Date(email.timestamp),
     }));
   }, [storedEmails]);
-
-  const setEmails = (value: Email[] | ((prev: Email[]) => Email[])) => {
-    if (typeof value === "function") {
-      setStoredEmails((prev) => {
-        const normalizedPrev = prev.map((email) => ({
-          ...email,
-          timestamp:
-            email.timestamp instanceof Date
-              ? email.timestamp
-              : new Date(email.timestamp),
-        }));
-        return value(normalizedPrev);
-      });
-    } else {
-      setStoredEmails(value);
-    }
-  };
-
-  const mailSidebar = {
-    sections: [
-      {
-        title: t("mail.sidebar.mailboxes"),
-        items: [
-          {
-            id: "inbox",
-            label: t("mail.sidebar.inbox"),
-            icon: Inbox,
-            badge: "4",
-          },
-          { id: "starred", label: t("mail.sidebar.starred"), icon: Star },
-          { id: "archived", label: t("mail.sidebar.archived"), icon: Archive },
-          { id: "trash", label: t("mail.sidebar.trash"), icon: Trash2 },
-        ],
-      },
-    ],
-  };
 
   // Filter emails based on active mailbox
   const filteredEmails = useMemo(() => {
     let filtered = emails;
 
     // Filter by mailbox
-    if (activeMailbox === "inbox") {
-      filtered = filtered.filter((e) => !e.deleted && !e.archived);
-    } else if (activeMailbox === "starred") {
-      filtered = filtered.filter((e) => e.starred && !e.deleted);
-    } else if (activeMailbox === "archived") {
-      filtered = filtered.filter((e) => e.archived && !e.deleted);
-    } else if (activeMailbox === "trash") {
-      filtered = filtered.filter((e) => e.deleted);
+    switch (activeMailbox) {
+      case "inbox":
+        filtered = filtered.filter((e) => !e.deleted && !e.archived);
+        break;
+      case "sent":
+        // In a real app we'd have 'sent' property or 'from' check. 
+        // For now, let's assume all stored emails are 'inbox' unless flagged otherwise, 
+        // or we filter by 'from === sessionUser' (if we implemented sending)
+        filtered = filtered.filter((e) => e.fromEmail === sessionUser && !e.deleted);
+        break;
+      case "starred":
+        filtered = filtered.filter((e) => e.starred && !e.deleted);
+        break;
+      case "archived":
+        filtered = filtered.filter((e) => e.archived && !e.deleted);
+        break;
+      case "trash":
+        filtered = filtered.filter((e) => e.deleted);
+        break;
     }
 
     // Filter by search query
@@ -273,61 +323,59 @@ export function Mail({ owner }: { owner?: string }) {
     return filtered.sort(
       (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
     );
-  }, [emails, activeMailbox, searchQuery]);
+  }, [emails, activeMailbox, searchQuery, sessionUser]);
 
   const selectedEmail = selectedEmailId
     ? filteredEmails.find((e) => e.id === selectedEmailId)
     : null;
 
-  const unreadCount = emails.filter(
-    (e) => !e.read && !e.deleted && !e.archived
-  ).length;
-  const updatedSidebar = {
-    ...mailSidebar,
-    sections: mailSidebar.sections.map((section) => ({
-      ...section,
-      items: section.items.map((item) =>
-        item.id === "inbox"
-          ? {
-              ...item,
-              badge: unreadCount > 0 ? unreadCount.toString() : undefined,
-            }
-          : item
-      ),
-    })),
-  };
-
+  // Actions
   const handleSelectEmail = (emailId: string) => {
     setSelectedEmailId(emailId);
-    setEmails((prev) =>
-      prev.map((e) => (e.id === emailId && !e.read ? { ...e, read: true } : e))
-    );
+    // Mark as read
+    const email = storedEmails.find(e => e.id === emailId);
+    if (email && !email.read) {
+      const newEmails = storedEmails.map(e => e.id === emailId ? { ...e, read: true } : e);
+      updateEmails(newEmails);
+    }
   };
 
   const handleToggleStar = (emailId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setEmails((prev) =>
-      prev.map((email) =>
-        email.id === emailId ? { ...email, starred: !email.starred } : email
-      )
+    const newEmails = storedEmails.map(email =>
+      email.id === emailId ? { ...email, starred: !email.starred } : email
     );
+    updateEmails(newEmails);
   };
 
   const handleDelete = () => {
     if (!selectedEmailId) return;
-    setEmails((prev) =>
-      prev.map((e) => (e.id === selectedEmailId ? { ...e, deleted: true } : e))
+    const newEmails = storedEmails.map(e =>
+      e.id === selectedEmailId ? { ...e, deleted: true } : e
     );
-    setSelectedEmailId(filteredEmails[0]?.id || null);
+    updateEmails(newEmails);
+
+    // Select next available
+    const remaining = newEmails.filter(e => !e.deleted && !e.archived); // approximate next selection
+    if (remaining.length > 0) {
+      setSelectedEmailId(remaining[0].id);
+    } else {
+      setSelectedEmailId(null);
+    }
   };
 
   const handleArchive = () => {
     if (!selectedEmailId) return;
-    setEmails((prev) =>
-      prev.map((e) =>
-        e.id === selectedEmailId ? { ...e, archived: !e.archived } : e
-      )
+    const newEmails = storedEmails.map(e =>
+      e.id === selectedEmailId ? { ...e, archived: !e.archived } : e
     );
+    updateEmails(newEmails);
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const formatTime = (date: Date) => {
@@ -345,18 +393,13 @@ export function Mail({ owner }: { owner?: string }) {
     return date.toLocaleDateString();
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
-
   const handleDownloadAttachment = (attachment: EmailAttachment) => {
-    const downloadsPath = resolvePath('~/Downloads', owner);
+    const downloadsPath = resolvePath('~/Downloads', activeUser);
     const success = createFile(
       downloadsPath,
       attachment.name,
-      attachment.content
+      attachment.content,
+      activeUser
     );
 
     if (success) {
@@ -377,9 +420,131 @@ export function Mail({ owner }: { owner?: string }) {
     }
   };
 
-  // Responsive container measurement
-  const [containerRef, { width }] = useElementSize();
-  const showSidebar = width >= 450;
+  // Show login page if not authenticated
+  if (!sessionUser) {
+    return (
+      <AppTemplate
+        content={
+          <div className="min-h-full flex items-center justify-center p-4">
+            <div className="w-full max-w-sm relative z-10">
+              <div
+                className={cn(
+                  "border border-white/10 rounded-xl p-6 shadow-2xl transition-all duration-300",
+                )}
+                style={{
+                  background: getBackgroundColor(0.8),
+                  ...blurStyle,
+                  boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.5)`
+                }}
+              >
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <h1 className="text-lg font-bold text-white">{t('mail.login.title')}</h1>
+                  <p className="text-xs text-gray-400">{t('mail.login.subtitle')}</p>
+                </div>
+
+                {authError && (
+                  <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded text-xs text-red-400">
+                    {authError}
+                  </div>
+                )}
+
+                {/* Login Form */}
+                <form onSubmit={handleLogin} className="space-y-3">
+                  <div>
+                    <GlassInput
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder={t('mail.login.emailPlaceholder')}
+                      required
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="relative">
+                      <GlassInput
+                        type={showPassword ? "text" : "password"}
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        placeholder={t('mail.login.passwordPlaceholder')}
+                        required
+                        className="w-full pr-9"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <GlassButton
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full justify-center font-medium transition-all hover:brightness-110"
+                    style={{ backgroundColor: accentColor }}
+                  >
+                    {authLoading ? t('mail.login.signingIn') : t('mail.login.signIn')}
+                  </GlassButton>
+                </form>
+
+                {/* Info */}
+                <div className="mt-4 pt-4 border-t border-gray-700 text-center">
+                  <p className="text-xs text-gray-400">{t('mail.login.createAccountInfo')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+        hasSidebar={false}
+      />
+    );
+  }
+
+  const mailSidebar = {
+    sections: [
+      {
+        title: t("mail.sidebar.mailboxes"),
+        items: [
+          {
+            id: "inbox",
+            label: t("mail.sidebar.inbox"),
+            icon: Inbox,
+            badge: "4",
+          },
+          { id: "starred", label: t("mail.sidebar.starred"), icon: Star },
+          { id: "archived", label: t("mail.sidebar.archived"), icon: Archive },
+          { id: "trash", label: t("mail.sidebar.trash"), icon: Trash2 },
+        ],
+      },
+    ],
+  };
+
+  const unreadCount = emails.filter(
+    (e) => !e.read && !e.deleted && !e.archived
+  ).length;
+  const updatedSidebar = {
+    ...mailSidebar,
+    sections: mailSidebar.sections.map((section) => ({
+      ...section,
+      items: section.items.map((item) =>
+        item.id === "inbox"
+          ? {
+            ...item,
+            badge: unreadCount > 0 ? unreadCount.toString() : undefined,
+          }
+          : item
+      ),
+    })),
+  };
 
   const content = ({ contentWidth }: { contentWidth: number }) => {
     const isCompact = contentWidth < 400;
@@ -421,9 +586,16 @@ export function Mail({ owner }: { owner?: string }) {
               </div>
             ) : (
               filteredEmails.map((email) => (
-                <button
+                <div
                   key={email.id}
                   onClick={() => handleSelectEmail(email.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleSelectEmail(email.id);
+                    }
+                  }}
                   className={cn(
                     "w-full flex items-start gap-2 p-3 rounded-lg transition-colors text-left",
                     selectedEmailId === email.id
@@ -435,7 +607,10 @@ export function Mail({ owner }: { owner?: string }) {
                 >
                   <div className="relative mt-1 shrink-0">
                     <button
-                      onClick={(e) => handleToggleStar(email.id, e)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleStar(email.id, e);
+                      }}
                       className="transition-transform active:scale-95"
                     >
                       <Star
@@ -492,7 +667,7 @@ export function Mail({ owner }: { owner?: string }) {
                       </div>
                     </div>
                   )}
-                </button>
+                </div>
               ))
             )}
           </div>
@@ -622,11 +797,11 @@ export function Mail({ owner }: { owner?: string }) {
                         <span className="text-sm font-medium">
                           {selectedEmail.attachments.length === 1
                             ? t("mail.attachments.count", {
-                                count: selectedEmail.attachments.length,
-                              })
+                              count: selectedEmail.attachments.length,
+                            })
                             : t("mail.attachments.count_plural", {
-                                count: selectedEmail.attachments.length,
-                              })}
+                              count: selectedEmail.attachments.length,
+                            })}
                         </span>
                       </div>
                       <div className="grid grid-cols-1 gap-2">
@@ -667,21 +842,45 @@ export function Mail({ owner }: { owner?: string }) {
     );
   };
 
-  return (
-    <div ref={containerRef} className="h-full w-full">
-      <AppTemplate
-        sidebar={updatedSidebar}
-        content={content}
-        hasSidebar={showSidebar}
-        activeItem={activeMailbox}
-        onItemClick={(id) => setActiveMailbox(id)}
-        minContentWidth={0}
-      />
+  const toolbar = (
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center gap-3">
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+          style={{
+            background: `linear-gradient(to bottom right, ${accentColor}, ${accentColor}80)`
+          }}
+        >
+          <span className="text-white text-xs font-semibold">
+            {sessionUser?.charAt(0).toUpperCase()}
+          </span>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-white">{sessionUser}</p>
+        </div>
+      </div>
+      <button
+        onClick={handleLogout}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-white text-sm transition-all hover:opacity-90 shrink-0"
+        style={{ backgroundColor: accentColor }}
+      >
+        <LogOut className="w-4 h-4" />
+        {t('mail.login.signOut')}
+      </button>
     </div>
   );
-}
 
-import { AppMenuConfig } from "@/types.ts";
+  return (
+    <AppTemplate
+      sidebar={updatedSidebar}
+      toolbar={toolbar}
+      content={content}
+      activeItem={activeMailbox}
+      onItemClick={(id) => setActiveMailbox(id)}
+      minContentWidth={450}
+    />
+  );
+}
 
 export const mailMenuConfig: AppMenuConfig = {
   menus: ["File", "Edit", "View", "Mailbox", "Message", "Window", "Help"],
@@ -703,27 +902,27 @@ export const mailMenuConfig: AppMenuConfig = {
       {
         label: "New Message",
         labelKey: "mail.menu.newMessage",
-        shortcut: "⌘N",
         action: "new-message",
+        shortcut: "Ctrl+N",
       },
       { type: "separator" },
       {
         label: "Reply",
         labelKey: "mail.menu.reply",
-        shortcut: "⌘R",
         action: "reply",
+        shortcut: "Ctrl+R",
       },
       {
         label: "Reply All",
         labelKey: "mail.menu.replyAll",
-        shortcut: "⇧⌘R",
         action: "reply-all",
+        shortcut: "Ctrl+Shift+R",
       },
       {
         label: "Forward",
         labelKey: "mail.menu.forward",
-        shortcut: "⇧⌘F",
         action: "forward",
+        shortcut: "Ctrl+F",
       },
     ],
   },
