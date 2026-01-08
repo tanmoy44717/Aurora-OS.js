@@ -187,29 +187,9 @@ export function Mail({ owner }: { owner?: string }) {
       }
     }
 
-    // 2. Fallback: Migration from legacy localStorage (global_mailbox)
-    const legacyMailbox = localStorage.getItem("global_mailbox");
-    if (legacyMailbox) {
-      try {
-        const parsed = JSON.parse(legacyMailbox);
-        const emails = parsed.emails;
-        if (Array.isArray(emails) && emails.length > 0) {
-          setStoredEmails(emails);
-          setSelectedEmailId((curr) => curr || emails[0].id);
-
-          // Save to file system immediately
-          createDirectory(userHome, ".Config", activeUser);
-          writeFile(inboxPath, JSON.stringify({ emails }, null, 2), activeUser);
-          return;
-        }
-      } catch (e) {
-        console.error("Failed to migrate legacy mailbox", e);
-      }
-    }
-
     // 3. Empty state
     setStoredEmails([]);
-  }, [sessionUser, readFile, inboxPath, userHome, activeUser, createDirectory, writeFile]);
+  }, [sessionUser, readFile, inboxPath, activeUser]);
 
   // Load emails when user changes or mounts
   useEffect(() => {
@@ -264,59 +244,51 @@ export function Mail({ owner }: { owner?: string }) {
 
     setAuthLoading(true);
     setTimeout(() => {
-      // 1. Check Legacy/Web localStorage accounts first (TrustMail)
-      // We still use these because the website writes to them.
-      // But now we ALSO write to FS.
+      // Read credentials from filesystem
+      const mailConfigContent = readFile(mailConfigPath, activeUser);
 
-      let foundAccount = null;
-      let provider = '';
-
-      const trustmailAccounts = JSON.parse(localStorage.getItem("trustmail_accounts") || "{}");
-      const mailAccounts = JSON.parse(localStorage.getItem("mail_accounts") || "{}"); // Legacy local
-
-      if (trustmailAccounts[loginEmail]) {
-        foundAccount = trustmailAccounts[loginEmail];
-        provider = 'trustmail';
-      } else if (mailAccounts[loginEmail]) {
-        foundAccount = mailAccounts[loginEmail];
-        provider = 'local';
+      if (!mailConfigContent) {
+        setAuthLoading(false);
+        setAuthError("No account found. Please create one on TrustMail first.");
+        return;
       }
 
-      if (foundAccount) {
-        // Compare with decoded password to satisfy security scanners and support simulation
-        const storedPassword = decodePassword(foundAccount.password);
-        if (storedPassword !== loginPassword && foundAccount.password !== loginPassword) { // Support legacy plain too
+      try {
+        const mailConfig = JSON.parse(mailConfigContent);
+
+        // Verify email matches
+        if (mailConfig.email !== loginEmail) {
           setAuthLoading(false);
-          setAuthError("Invalid password");
+          setAuthError("Invalid email or password");
+          return;
+        }
+
+        // Verify password
+        const storedPassword = decodePassword(mailConfig.password);
+        if (storedPassword !== loginPassword && mailConfig.password !== loginPassword) {
+          setAuthLoading(false);
+          setAuthError("Invalid email or password");
           return;
         }
 
         // Successful Login
         setSessionUser(loginEmail);
 
-        // SYNC: Update the global website session so TrustMail site knows we are logged in
-        if (provider === 'trustmail') {
-          localStorage.setItem('global_mail_account', loginEmail);
-        }
-
-        // Write to FS for auto-login next time (Persistence)
-        createDirectory(userHome, '.Config', activeUser);
-        const mailConfig = {
-          email: loginEmail,
-          password: encodePassword(loginPassword),
-          provider: provider,
+        // Update last login timestamp
+        const updatedConfig = {
+          ...mailConfig,
           lastLogin: new Date().toISOString()
         };
-        writeFile(mailConfigPath, JSON.stringify(mailConfig, null, 2), activeUser);
+        writeFile(mailConfigPath, JSON.stringify(updatedConfig, null, 2), activeUser);
 
         setAuthLoading(false);
         setLoginEmail("");
         setLoginPassword("");
-        return;
+      } catch (e) {
+        console.error("Failed to parse mail.json", e);
+        setAuthLoading(false);
+        setAuthError("Configuration file corrupted. Please contact support.");
       }
-
-      setAuthLoading(false);
-      setAuthError("Account not found");
     }, 600);
   };
 
@@ -327,9 +299,6 @@ export function Mail({ owner }: { owner?: string }) {
     setLoginPassword("");
     setAuthError("");
     setStoredEmails([]);
-
-    // SYNC: Clear global website session
-    localStorage.removeItem('global_mail_account');
 
     // Clear auto-login file
     writeFile(mailConfigPath, "", activeUser); // Write empty or delete.
