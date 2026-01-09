@@ -138,7 +138,7 @@ export const es: TranslationDict = {
       noResults: 'No languages found',
     },
     validation: {
-      required: 'Please fill in all required fields',
+      requiredFields: 'Completa todos los campos requeridos',
       passwordLength: 'Password must be at least 6 characters',
       userExists: 'User already exists. Please choose another username.',
       fullNameFormat: 'Full Name should only contain letters, spaces, and hyphens',
@@ -249,6 +249,8 @@ export const es: TranslationDict = {
       warning: 'Advertencia',
       panicWarningBody:
         'Esto restablecerá {{productName}} a valores de fábrica. Útil como botón de pánico si algo falla.',
+      serverTime: 'Hora del Servidor (UTC)',
+      localTime: 'Hora Local',
     },
     app: {
       aboutApp: 'Acerca de {{appName}}',
@@ -282,6 +284,30 @@ export const es: TranslationDict = {
       },
     },
   },
+  memory: {
+    title: 'Memoria',
+    used: 'Usada',
+    pressure: 'Presión',
+    appMemory: 'Memoria de Apps',
+    wiredMemory: 'Memoria Reservada',
+    processName: 'Nombre del Proceso',
+    memory: 'Memoria',
+    swapUsed: 'Intercambio Usado',
+    systemWired: 'Sistema Aurora',
+    activeSession: 'Memoria Reservada (Sesión Activa)',
+    userSession: 'Sesión: {{user}}',
+    backgroundSession: 'Memoria Inactiva (Fondo)',
+    backgroundProcesses: '{{count}} Procesos en Segundo Plano',
+    instances: '{{count}} Instancias',
+    type: {
+      mainWindow: 'Ventana Principal',
+      extraWindow: 'Ventana Adicional',
+      extraTabs: '{{count}} Pestañas Extra',
+    },
+  },
+
+
+
   appStore: {
     menu: {
       checkForUpdates: 'Buscar actualizaciones...',
@@ -486,6 +512,10 @@ export const es: TranslationDict = {
       sudo: {
         description: 'Ejecutar un comando como otro usuario',
         usage: 'sudo [opciones] [comando]',
+      },
+      history: {
+        description: 'Mostrar historial de comandos del terminal',
+        usage: 'history [-c] [n]',
       },
     },
   },
@@ -1024,6 +1054,39 @@ export const es: TranslationDict = {
       hardResetWarning: '⚠️ Todos los archivos y carpetas personalizados se borrarán permanentemente',
       factoryReset: 'Restablecer de fábrica',
       deleteEverything: 'Sí, borrar todo',
+    },
+  },
+  battery: {
+    title: 'Batería',
+    charging: 'Cargando',
+    fullyCharged: 'Completamente cargada',
+    remaining: '{{percentage}}% restante',
+    powerSource: 'Fuente de alimentación:',
+    powerSources: {
+      adapter: 'Adaptador de corriente',
+      battery: 'Batería',
+    },
+    condition: 'Condición (Est.)',
+    metrics: {
+      health: 'Salud',
+      cycles: 'Ciclos',
+      temp: 'Temp',
+      voltage: 'Voltaje',
+    },
+    disclaimer: 'Las métricas de salud y condición de la batería son estimaciones basadas en los sensores del sistema disponibles. Los valores reales pueden variar.',
+    showPercentage: 'Mostrar porcentaje en la barra de menú',
+  },
+  audio: {
+    title: 'Sonido',
+    muteAll: 'Silenciar todo',
+    unmute: 'Activar sonido',
+    masterVolume: 'Volumen maestro',
+    mixer: 'Mezclador',
+    categories: {
+      music: 'Música',
+      system: 'Alertas del sistema',
+      interface: 'Interfaz',
+      feedback: 'Retroalimentación de entrada',
     },
   },
 };

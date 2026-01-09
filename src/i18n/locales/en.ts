@@ -197,6 +197,8 @@ export const en: TranslationDict = {
       warning: 'Warning',
       panicWarningBody:
         'This will reset {{productName}} to factory defaults. Good as a panic button if something goes wrong, too.',
+      serverTime: 'Server Time (UTC)',
+      localTime: 'Local Time',
     },
     app: {
       aboutApp: 'About {{appName}}',
@@ -228,6 +230,27 @@ export const en: TranslationDict = {
         title: 'Download Complete',
         message: '{{filename}} is ready',
       },
+    },
+  },
+  memory: {
+    title: 'Memory',
+    used: 'Used',
+    pressure: 'Pressure',
+    appMemory: 'App Memory',
+    wiredMemory: 'Wired Memory',
+    processName: 'Process Name',
+    memory: 'Memory',
+    swapUsed: 'Swap Used',
+    systemWired: 'Aurora System',
+    activeSession: 'Wired Memory (Active Session)',
+    userSession: 'Session: {{user}}',
+    backgroundSession: 'Dormant Memory (Background)',
+    backgroundProcesses: '{{count}} Background Processes',
+    instances: '{{count}} Instances',
+    type: {
+      mainWindow: 'Main Window',
+      extraWindow: 'Extra Window',
+      extraTabs: '{{count}} Extra Tabs',
     },
   },
   appStore: {
@@ -434,6 +457,10 @@ export const en: TranslationDict = {
       sudo: {
         description: 'Execute a command as another user',
         usage: 'sudo [options] [command]',
+      },
+      history: {
+        description: 'Show terminal command history',
+        usage: 'history [-c] [n]',
       },
     },
   },
@@ -1017,7 +1044,7 @@ export const en: TranslationDict = {
       noResults: 'No languages found',
     },
     validation: {
-      required: 'Please fill in all required fields',
+      requiredFields: 'Please fill in all required fields',
       passwordLength: 'Password must be at least 6 characters',
       userExists: 'User already exists. Please choose another username.',
       fullNameFormat: 'Full Name should only contain letters, spaces, and hyphens',
@@ -1031,6 +1058,39 @@ export const en: TranslationDict = {
       next: 'Next',
       back: 'Back',
       startUsing: 'Start Using Aurora',
+    },
+  },
+  battery: {
+    title: 'Battery',
+    charging: 'Charging',
+    fullyCharged: 'Fully Charged',
+    remaining: '{{percentage}}% Remaining',
+    powerSource: 'Power Source:',
+    powerSources: {
+      adapter: 'Power Adapter',
+      battery: 'Battery',
+    },
+    condition: 'Condition (Est.)',
+    metrics: {
+      health: 'Health',
+      cycles: 'Cycles',
+      temp: 'Temp',
+      voltage: 'Voltage',
+    },
+    disclaimer: 'Battery health and condition metrics are estimates based on available system sensors. Actual values may vary.',
+    showPercentage: 'Show percentage in menu bar',
+  },
+  audio: {
+    title: 'Sound',
+    muteAll: 'Mute All',
+    unmute: 'Unmute',
+    masterVolume: 'Master Volume',
+    mixer: 'Mixer',
+    categories: {
+      music: 'Music',
+      system: 'System Alerts',
+      interface: 'Interface',
+      feedback: 'Input Feedback',
     },
   },
 };

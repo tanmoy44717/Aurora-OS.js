@@ -19,6 +19,8 @@ export const STORAGE_KEYS = {
     LANGUAGE: 'aurora-system-language', // System Language
     TERMINAL_HISTORY: 'aurora-terminal-history-', // Command output history prefix
     TERMINAL_INPUT: 'aurora-terminal-input-', // Command input history prefix
+    BATTERY: 'aurora-os-battery-settings', // Battery preferences
+    TIME_MODE: 'aurora-time-mode', // Clock display preference (server/local)
 
     // Hard memory keys (core data, dangerous to forget)
     FILESYSTEM: 'aurora-filesystem',
@@ -39,6 +41,8 @@ const MEMORY_CONFIG = {
             STORAGE_KEYS.SOUND,
             STORAGE_KEYS.SYSTEM_CONFIG,
             STORAGE_KEYS.LANGUAGE,
+            STORAGE_KEYS.BATTERY, // Battery settings
+            STORAGE_KEYS.TIME_MODE, // Time preference
             STORAGE_KEYS.TRUSTMAIL_CURRENT // Website login is "soft"
         ] as string[],
         prefixes: [
@@ -96,25 +100,15 @@ export function softReset(): void {
     console.log(`Soft reset: Cleared ${keysToRemove.length} preference keys`);
 }
 
+
 /**
  * Hard Reset - Clears everything including the filesystem
  * This is destructive and will wipe all user data
  */
 export function hardReset(): void {
-    const keysToRemove: string[] = [];
-
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) {
-            const type = getMemoryType(key);
-            if (type === 'soft' || type === 'hard') {
-                keysToRemove.push(key);
-            }
-        }
-    }
-
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    console.log(`Hard reset: Cleared ${keysToRemove.length} total keys (including filesystem)`);
+    const count = localStorage.length;
+    localStorage.clear();
+    console.log(`Hard reset: Cleared ${count} total keys (Full Wipe)`);
 }
 
 /**
@@ -210,3 +204,16 @@ export function clearSession(username: string): void {
     console.log(`Cleared session for user: ${username} (${keysToRemove.length + 3} keys)`);
 }
 
+/**
+ * Get the storage key for an app's persisted state
+ */
+export function getAppStateKey(appId: string, username: string): string {
+    return `${STORAGE_KEYS.APP_PREFIX}${appId}-state-${username}`;
+}
+
+/**
+ * Get the storage key for a user's window session
+ */
+export function getWindowKey(username: string): string {
+    return `${STORAGE_KEYS.WINDOWS_PREFIX}${username}`;
+}

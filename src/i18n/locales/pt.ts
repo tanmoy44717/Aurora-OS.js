@@ -190,6 +190,8 @@ export const pt: TranslationDict = {
       warning: 'Aviso',
       panicWarningBody:
         'Isso redefinirá o {{productName}} para os padrões de fábrica. Útil se algo der muito errado.',
+      serverTime: 'Horário do Servidor (UTC)',
+      localTime: 'Horário Local',
     },
     app: {
       aboutApp: 'Sobre {{appName}}',
@@ -223,6 +225,30 @@ export const pt: TranslationDict = {
       },
     },
   },
+  memory: {
+    title: 'Memória',
+    used: 'Usada',
+    pressure: 'Pressão',
+    appMemory: 'Memória de Apps',
+    wiredMemory: 'Memória Residente',
+    processName: 'Nome do Processo',
+    memory: 'Memória',
+    swapUsed: 'Swap Usado',
+    systemWired: 'Sistema Aurora',
+    activeSession: 'Memória Residente (Sessão Ativa)',
+    userSession: 'Sessão: {{user}}',
+    backgroundSession: 'Memória Inativa (Fundo)',
+    backgroundProcesses: '{{count}} Processos em Segundo Plano',
+    instances: '{{count}} Instâncias',
+    type: {
+      mainWindow: 'Janela Principal',
+      extraWindow: 'Janela Adicional',
+      extraTabs: '{{count}} Abas Extras',
+    },
+  },
+
+
+
   appStore: {
     menu: {
       checkForUpdates: 'Verificar atualizações...',
@@ -427,6 +453,10 @@ export const pt: TranslationDict = {
       sudo: {
         description: 'Executar um comando como outro usuário',
         usage: 'sudo [opcoes] [comando]',
+      },
+      history: {
+        description: 'Mostrar histórico de comandos do terminal',
+        usage: 'history [-c] [n]',
       },
     },
   },
@@ -1010,7 +1040,7 @@ export const pt: TranslationDict = {
       noResults: 'No languages found',
     },
     validation: {
-      required: 'Please fill in all required fields',
+      requiredFields: 'Preencha todos os campos obrigatórios',
       passwordLength: 'Password must be at least 6 characters',
       userExists: 'User already exists. Please choose another username.',
       fullNameFormat: 'Full Name should only contain letters, spaces, and hyphens',
@@ -1024,6 +1054,39 @@ export const pt: TranslationDict = {
       next: 'Próximo',
       back: 'Voltar',
       startUsing: 'Começar a Usar o Aurora',
+    },
+  },
+  battery: {
+    title: 'Bateria',
+    charging: 'Carregando',
+    fullyCharged: 'Totalmente Carregada',
+    remaining: '{{percentage}}% Restante',
+    powerSource: 'Fonte de Energia:',
+    powerSources: {
+      adapter: 'Adaptador de Energia',
+      battery: 'Bateria',
+    },
+    condition: 'Condição (Est.)',
+    metrics: {
+      health: 'Saúde',
+      cycles: 'Ciclos',
+      temp: 'Temp',
+      voltage: 'Voltagem',
+    },
+    disclaimer: 'As métricas de saúde e condição da bateria são estimativas baseadas nos sensores do sistema disponíveis. Os valores reais podem variar.',
+    showPercentage: 'Mostrar porcentagem na barra de menus',
+  },
+  audio: {
+    title: 'Som',
+    muteAll: 'Silenciar Tudo',
+    unmute: 'Reativar Som',
+    masterVolume: 'Volume Principal',
+    mixer: 'Mixer',
+    categories: {
+      music: 'Música',
+      system: 'Alertas do Sistema',
+      interface: 'Interface',
+      feedback: 'Feedback de Entrada',
     },
   },
 };

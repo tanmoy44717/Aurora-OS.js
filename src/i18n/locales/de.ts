@@ -184,6 +184,8 @@ export const de: TranslationDict = {
       warning: 'Warnung',
       panicWarningBody:
         'Dadurch wird {{productName}} auf Werkseinstellungen zurückgesetzt. Auch gut als Panikknopf, wenn etwas schiefgeht.',
+      serverTime: 'Serverzeit (UTC)',
+      localTime: 'Ortszeit',
     },
     app: {
       aboutApp: 'Über {{appName}}',
@@ -217,6 +219,30 @@ export const de: TranslationDict = {
       },
     },
   },
+  memory: {
+    title: 'Speicher',
+    used: 'Verwendet',
+    pressure: 'Druck',
+    appMemory: 'App-Speicher',
+    wiredMemory: 'Reservierter Speicher',
+    processName: 'Prozessname',
+    memory: 'Speicher',
+    swapUsed: 'Swap verwendet',
+    systemWired: 'Aurora System',
+    activeSession: 'Reservierter Speicher (Aktive Sitzung)',
+    userSession: 'Sitzung: {{user}}',
+    backgroundSession: 'Inaktiver Speicher (Hintergrund)',
+    backgroundProcesses: '{{count}} Hintergrundprozesse',
+    instances: '{{count}} Instanzen',
+    type: {
+      mainWindow: 'Hauptfenster',
+      extraWindow: 'Zusatzfenster',
+      extraTabs: '{{count}} weitere Tabs',
+    },
+  },
+
+
+
   appStore: {
     menu: {
       checkForUpdates: 'Nach Updates suchen...',
@@ -421,6 +447,10 @@ export const de: TranslationDict = {
       sudo: {
         description: 'Einen Befehl als anderer Benutzer ausführen',
         usage: 'sudo [optionen] [befehl]',
+      },
+      history: {
+        description: 'Terminal-Befehlsverlauf anzeigen',
+        usage: 'history [-c] [n]',
       },
     },
   },
@@ -1004,7 +1034,7 @@ export const de: TranslationDict = {
       noResults: 'No languages found',
     },
     validation: {
-      required: 'Please fill in all required fields',
+      requiredFields: 'Bitte füllen Sie alle erforderlichen Felder aus',
       passwordLength: 'Password must be at least 6 characters',
       userExists: 'User already exists. Please choose another username.',
       fullNameFormat: 'Full Name should only contain letters, spaces, and hyphens',
@@ -1018,6 +1048,39 @@ export const de: TranslationDict = {
       next: 'Weiter',
       back: 'Zurück',
       startUsing: 'Aurora starten',
+    },
+  },
+  battery: {
+    title: 'Batterie',
+    charging: 'Lädt',
+    fullyCharged: 'Vollständig geladen',
+    remaining: '{{percentage}}% verbleibend',
+    powerSource: 'Stromquelle:',
+    powerSources: {
+      adapter: 'Netzteil',
+      battery: 'Batterie',
+    },
+    condition: 'Zustand (Geschätzt)',
+    metrics: {
+      health: 'Gesundheit',
+      cycles: 'Zyklen',
+      temp: 'Temp',
+      voltage: 'Spannung',
+    },
+    disclaimer: 'Batteriegesundheit und -zustand sind Schätzungen basierend auf verfügbaren Systemsensoren. Tatsächliche Werte können abweichen.',
+    showPercentage: 'Prozentsatz in der Menüleiste anzeigen',
+  },
+  audio: {
+    title: 'Ton',
+    muteAll: 'Alle stummschalten',
+    unmute: 'Stummschaltung aufheben',
+    masterVolume: 'Gesamtlautstärke',
+    mixer: 'Mixer',
+    categories: {
+      music: 'Musik',
+      system: 'Systemwarnungen',
+      interface: 'Oberfläche',
+      feedback: 'Eingabefeedback',
     },
   },
 };
