@@ -11,6 +11,7 @@ import { useAppContext } from "@/components/AppContext";
 import { Lightbox } from '@/components/ui/Lightbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
+import { isValidImageUrl } from '@/utils/urlUtils';
 
 export function Photos(props: { owner?: string, onOpenApp?: (type: string, data?: any, owner?: string) => void }) {
   const { activeUser: desktopUser } = useAppContext();
@@ -243,7 +244,7 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
               onClick={() => handlePhotoClick(photo)}
             >
               <img
-                src={photo.url}
+                src={isValidImageUrl(photo.url) ? photo.url : ''}
                 alt={photo.name}
                 className="w-full rounded-lg shadow-lg hover:ring-2 hover:ring-white/20 transition-all"
                 loading="lazy"
@@ -270,7 +271,7 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
               className="flex items-center gap-4 p-2 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer"
               onClick={() => handlePhotoClick(photo)}
             >
-              <img src={photo.url} className="w-12 h-12 rounded object-cover" alt="" />
+              <img src={isValidImageUrl(photo.url) ? photo.url : ''} className="w-12 h-12 rounded object-cover" alt="" />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-white truncate">{photo.name}</div>
                 <div className="text-xs text-white/50 truncate flex items-center gap-1.5">

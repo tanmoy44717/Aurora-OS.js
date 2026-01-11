@@ -41,7 +41,13 @@ class MailServiceImpl {
 
   // Generate a random recovery secret (simulated 4-word phrase or code)
   private generateSecret(): string {
-    return Array.from({ length: 4 }, () => Math.random().toString(36).substring(2, 7)).join('-');
+     const array = new Uint32Array(4);
+     window.crypto.getRandomValues(array);
+     
+     // Convert to base36 strings to look like the original format but securely generated
+     return Array.from(array)
+       .map(x => x.toString(36).substring(0, 5).padEnd(5, '0'))
+       .join('-');
   }
 
   createAccount(
