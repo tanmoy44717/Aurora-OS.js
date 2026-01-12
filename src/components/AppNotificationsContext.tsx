@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, startTransition } from 'react';
 import { useAppContext } from '@/components/AppContext';
 
 /**
@@ -65,9 +65,13 @@ export function AppNotificationsProvider({ children }: { children: React.ReactNo
     try {
       const raw = localStorage.getItem(storageKeyFor(activeUser));
       const parsed = raw ? (JSON.parse(raw) as AppNotification[]) : [];
-      setNotifications(Array.isArray(parsed) ? parsed : []);
+      startTransition(() => {
+        setNotifications(Array.isArray(parsed) ? parsed : []);
+      });
     } catch {
-      setNotifications([]);
+      startTransition(() => {
+        setNotifications([]);
+      });
     }
   }, [activeUser]);
 
