@@ -94,6 +94,9 @@ trigger: always_on
       - Creates user via `createUser()`, initializes home directory, sets system creation timestamp.
     - **GAMEPLAY State**: Unmounts/remounts OS Desktop to force app re-initialization after state changes.
     - **AudioContext**: Unlocked in IntroSequence via user interaction (browser requirement).
+    - **GameScreenLayout**: Unified wrapper with dual modes:
+      - `mode="terminal"` (Default): ASCII art, monospaced font, pure black bg. Used for Boot/Menu.
+      - `mode="glass"`: Restored legacy glassmorphism, sans-serif, animated "Orbit" logo. Used for Login/Onboarding.
 
 8.  **Reference Implementations**:
 

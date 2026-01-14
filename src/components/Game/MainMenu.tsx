@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Power, Play, Disc, Users } from 'lucide-react';
+import { Settings, Power, Play, Disc } from 'lucide-react';
 import { cn } from '@/components/ui/utils';
 import { feedback } from '@/services/soundFeedback';
 import { GameScreenLayout } from '@/components/Game/GameScreenLayout';
@@ -119,75 +119,126 @@ export function MainMenu({ onNewGame, onContinue, canContinue }: MainMenuProps) 
 
     return (
         <GameScreenLayout zIndex={40000}>
-            {/* Menu Options */}
-            <div className="flex flex-col gap-4 w-[90%] md:w-full max-w-md">
-                {menuItems.map((item, index) => (
-                    <motion.button
-                        key={item.id}
-                        initial={{ x: -20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: index * 0.1 }}
-                        disabled={item.disabled}
-                        onClick={() => {
-                            if (item.disabled) return;
-                            feedback.click();
-                            item.action();
-                        }}
-                        onMouseEnter={() => {
-                            if (item.disabled || selected === index) return;
-                            setSelected(index);
-                            feedback.hover();
-                        }}
-                        className={cn(
-                            "group relative w-full p-4 rounded-xl transition-all duration-200 border border-transparent outline-none",
-                            !item.disabled && "hover:bg-white/10 hover:border-white/20 hover:scale-[1.02] hover:shadow-lg cursor-pointer",
-                            item.disabled && "opacity-50 grayscale cursor-not-allowed",
-                            selected === index && !item.disabled && "bg-white/10 border-white/20 shadow-lg scale-[1.02]"
-                        )}
-                    >
-                        <div className="flex items-center gap-4">
-                            <item.icon className={cn(
-                                "w-6 h-6 transition-colors",
-                                item.disabled ? "text-zinc-500" : (selected === index ? "text-white" : "text-white/70")
-                            )} />
-                            <div className="flex-1 text-left">
-                                <div className={cn(
-                                    "text-lg font-bold tracking-wide transition-colors",
-                                    item.disabled ? "text-zinc-500" : (selected === index ? "text-white" : "text-white/80")
-                                )}>
-                                    {item.label}
-                                </div>
-                                <div className={cn(
-                                    "text-xs uppercase tracking-wider",
-                                    item.disabled ? "text-zinc-600" : "text-white/40"
-                                )}>
-                                    {item.desc}
-                                </div>
-                            </div>
-                            {selected === index && !item.disabled && (
-                                <motion.div layoutId="cursor" className="w-2 h-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
+            {/* Menu Options Container - Fluid Sizing */}
+            <div className="flex flex-col justify-center w-full max-w-[90%] sm:max-w-[80vh] md:max-w-[70vh] lg:max-w-[60vh] shrink min-h-0 mx-auto">
+                <div 
+                    className="flex flex-col justify-center min-h-0 ease-out"
+                    style={{ gap: 'min(3.5vh, 2rem)' }} // Start fresh (Wipes data)
+                >
+                    {menuItems.map((item, index) => (
+                        <motion.button
+                            key={item.id}
+                            initial={{ x: -20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: index * 0.1 }}
+                            disabled={item.disabled}
+                            onClick={() => {
+                                if (item.disabled) return;
+                                feedback.click();
+                                item.action();
+                            }}
+                            onMouseEnter={() => {
+                                if (item.disabled || selected === index) return;
+                                setSelected(index);
+                                feedback.hover();
+                            }}
+                            className={cn(
+                                "group relative w-full outline-none text-left font-mono shrink", 
+                                "border-[clamp(1px,0.2vh,2px)]", // Fluid Border
+                                
+                                // Interactive States (Only if NOT disabled)
+                                !item.disabled 
+                                    ? (selected === index 
+                                        ? "bg-white text-black border-white shadow-[0.5vh_0.5vh_0_0_rgba(0,0,0,0.5)]" 
+                                        : "bg-black/80 text-white border-white/40 hover:border-white cursor-pointer hover:bg-white hover:text-black hover:shadow-[0.5vh_0.5vh_0_0_rgba(0,0,0,0.5)]")
+                                    : "opacity-50 grayscale cursor-not-allowed border-zinc-800 bg-zinc-950 text-zinc-600"
                             )}
-                        </div>
-                    </motion.button>
-                ))}
+                            style={{
+                                padding: 'min(3.5vh, 32px)', // Restored Larger Padding
+                                boxShadow: selected === index && !item.disabled 
+                                    ? '0.4vh 0.4vh 0 0 rgba(0,0,0,0.5)' 
+                                    : '0 0 0 1px black'
+                            }}
+                        >
+                            <div className="flex items-center relative z-10" style={{ gap: 'min(3vh, 24px)' }}> 
+                                {/* Icon Box - Fluid Size */}
+                                <div className={cn(
+                                    "flex items-center justify-center transition-colors shrink-0",
+                                    item.disabled ? "border-zinc-800" : (selected === index ? "border-black" : "border-white/40 group-hover:border-black")
+                                )}
+                                style={{
+                                    width: 'min(5vh, 48px)', // Restored Size
+                                    height: 'min(5vh, 48px)',
+                                    borderWidth: 'clamp(1px, 0.2vh, 2px)'
+                                }}
+                                >
+                                    <item.icon className={cn(
+                                        "transition-colors",
+                                        item.disabled ? "text-zinc-600" : (selected === index ? "text-black" : "text-white group-hover:text-black")
+                                    )} 
+                                    style={{ width: '50%', height: '50%' }}
+                                    />
+                                </div>
 
-                {/* Footer / Credits */}
+                                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                    <div className={cn(
+                                        "font-bold tracking-wider uppercase mb-0.5 truncate leading-none",
+                                        item.disabled ? "text-zinc-600" : (selected === index ? "text-black" : "text-white group-hover:text-black")
+                                    )}
+                                    style={{ fontSize: 'min(2.5vh, 24px)' }} // Restored Text
+                                    >
+                                        {item.label}
+                                    </div>
+                                    <div className={cn(
+                                        "tracking-widest opacity-80 truncate hidden sm:block",
+                                        item.disabled ? "text-zinc-700" : (selected === index ? "text-black/70" : "text-white/50 group-hover:text-black/70")
+                                    )}
+                                    style={{ fontSize: 'min(1.2vh, 12px)' }}
+                                    >
+                                        {item.desc}
+                                    </div>
+                                </div>
+
+                                {/* Chevron / Indicator */}
+                                {selected === index && !item.disabled && (
+                                    <motion.div 
+                                        layoutId="cursor" 
+                                        className="hidden sm:block font-bold animate-pulse"
+                                        style={{ fontSize: 'min(2.5vh, 24px)' }}
+                                    >
+                                        &lt;
+                                    </motion.div>
+                                )}
+                            </div>
+                        </motion.button>
+                    ))}
+                </div>
+
+                {/* Footer / Credits - FIXED BOTTOM RIGHT */}
                 <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="mt-8 flex justify-center"
+                    className="fixed bottom-6 right-6 z-50 hidden sm:block" // Hidden on mobile, valid for desktop design
                 >
                      <button
                         onClick={() => { feedback.click(); setShowCredits(true); }}
-                        className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-white/20"
+                        className="group flex items-center gap-2 bg-black border border-white/20 hover:border-white font-mono text-white/40 hover:text-white uppercase tracking-widest transition-colors"
+                        style={{
+                            padding: '10px 24px',
+                            fontSize: '12px'
+                        }}
                     >
-                        <Users className="w-4 h-4 text-white/40 group-hover:text-white/80 transition-colors" />
-                        <span className="text-xs font-medium text-white/40 group-hover:text-white/80 transition-colors tracking-wide uppercase">
-                            Credits
-                        </span>
+                        <span>[</span>
+                        <span>Credits</span>
+                        <span>]</span>
                     </button>
                 </motion.div>
+                
+                {/* Mobile Fallback for Credits (Keep it inline on tiny screens) */}
+                <div className="sm:hidden flex justify-center mt-4 opacity-50">
+                    <button onClick={() => setShowCredits(true)} className="text-[10px] uppercase border border-white/20 px-2 py-1">[Credits]</button>
+                </div>
             </div>
 
             {/* Settings Modal */}
@@ -204,24 +255,24 @@ export function MainMenu({ onNewGame, onContinue, canContinue }: MainMenuProps) 
                 )}
             </AnimatePresence>
 
-            {/* Exit Confirmation Modal (Styled) */}
+            {/* Exit Confirmation Modal (Terminal Style) */}
             <AnimatePresence>
                 {showExitConfirm && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                            className="bg-zinc-900/90 border border-red-500/30 p-8 max-w-md w-full rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] relative text-center"
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="terminal-card max-w-md w-full relative text-center font-mono p-8"
                         >
                             <div className="flex flex-col items-center gap-6">
-                                <div className="p-4 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 shadow-inner">
+                                <div className="p-4 bg-white text-black border-2 border-white">
                                     <Power className="w-10 h-10" />
                                 </div>
 
-                                <div className="space-y-2">
-                                    <h3 className="text-2xl font-bold text-white tracking-wide">{t('game.mainMenu.exit.confirm.title')}</h3>
-                                    <p className="text-white/60">
+                                <div className="space-y-4">
+                                    <h3 className="text-2xl font-bold text-white uppercase tracking-wider">{t('game.mainMenu.exit.confirm.title')}</h3>
+                                    <p className="text-white/60 text-sm leading-relaxed border-t border-b border-white/10 py-4">
                                         {t('game.mainMenu.exit.confirm.message')}
                                     </p>
                                 </div>
@@ -232,7 +283,7 @@ export function MainMenu({ onNewGame, onContinue, canContinue }: MainMenuProps) 
                                             feedback.click();
                                             setShowExitConfirm(false);
                                         }}
-                                        className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium transition-colors"
+                                        className="px-6 py-4 border-2 border-white/20 text-white hover:border-white hover:bg-white hover:text-black transition-all font-bold uppercase tracking-wide text-sm"
                                     >
                                         {t('game.mainMenu.exit.confirm.cancel')}
                                     </button>
@@ -242,7 +293,7 @@ export function MainMenu({ onNewGame, onContinue, canContinue }: MainMenuProps) 
                                             saveFileSystem();
                                             window.close();
                                         }}
-                                        className="px-6 py-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-200 hover:text-white font-medium transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_25px_rgba(239,68,68,0.4)]"
+                                        className="px-6 py-4 bg-red-600 text-white border-2 border-red-600 hover:bg-red-500 transition-all font-bold uppercase tracking-wide text-sm shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
                                     >
                                         {t('game.mainMenu.exit.confirm.confirm')}
                                     </button>

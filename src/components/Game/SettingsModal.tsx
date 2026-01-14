@@ -98,27 +98,27 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
     ] as const;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
             <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                className="bg-zinc-900/95 border border-white/10 max-w-2xl w-full rounded-2xl shadow-2xl relative flex flex-col overflow-hidden max-h-[85vh]"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="terminal-card max-w-2xl w-full shadow-2xl relative flex flex-col overflow-hidden max-h-[85vh] font-mono text-white"
             >
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-white/5 bg-zinc-900/50">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                            <Settings className="w-5 h-5 text-white/70" />
+                <div className="flex justify-between items-center p-6 border-b border-white bg-black">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-white text-black border border-white">
+                            <Settings className="w-5 h-5" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-white tracking-wide">{t('game.bios.title')}</h2>
-                            <p className="text-xs text-white/40 uppercase tracking-widest font-mono mt-0.5">Configuration Utility</p>
+                            <h2 className="text-xl font-bold tracking-widest uppercase">{t('game.bios.title')}</h2>
+                            <p className="text-xs text-white/50 uppercase tracking-widest font-mono mt-0.5">Configuration Utility</p>
                         </div>
                     </div>
                     <button
                         onClick={() => { feedback.click(); onClose(); }}
-                        className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white"
+                        className="p-2 hover:bg-white hover:text-black transition-colors border border-transparent hover:border-white"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -126,16 +126,16 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
 
                 <div className="flex flex-1 overflow-hidden">
                     {/* Sidebar Tabs */}
-                    <div className="w-48 bg-black/20 border-r border-white/5 p-4 space-y-2 shrink-0">
+                    <div className="w-48 bg-black border-r border-white p-4 space-y-2 shrink-0">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => { feedback.click(); setActiveTab(tab.id as Tab); }}
                                 className={cn(
-                                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                                    "w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all duration-100 border-2",
                                     activeTab === tab.id
-                                        ? "bg-white text-black shadow-lg shadow-white/10 scale-[1.02]"
-                                        : "text-white/60 hover:text-white hover:bg-white/5 hover:scale-[1.02]"
+                                        ? "bg-white text-black border-white shadow-[2px_2px_0_0_rgba(0,0,0,0.5)]"
+                                        : "bg-black text-white/50 border-transparent hover:border-white/50 hover:text-white"
                                 )}
                             >
                                 <tab.icon className={cn("w-4 h-4", activeTab === tab.id ? "text-black" : "text-white/50")} />
@@ -145,35 +145,37 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 p-8 overflow-y-auto bg-white/2">
+                    <div className="flex-1 p-8 overflow-y-auto bg-black bg-size-[16px_16px] bg-[radial-gradient(#ffffff1a_1px,transparent_1px)]">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={activeTab}
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.2 }}
+                                transition={{ duration: 0.1 }}
                                 className="space-y-8"
                             >
                                 {activeTab === 'display' && (
                                     <>
                                         <div className="space-y-4">
-                                            <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider">{t('game.bios.fullScreen')}</h3>
-                                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                                            <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider border-b border-white/20 pb-2 flex items-center gap-2">
+                                                <span className="w-2 h-2 bg-white/40"/> {t('game.bios.fullScreen')}
+                                            </h3>
+                                            <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 hover:border-white/50 transition-colors">
                                                 <div className="flex items-center gap-3 text-white/80">
                                                     <Monitor className="w-5 h-5" />
                                                     <div className="flex flex-col">
-                                                        <span className="font-medium">{t('game.bios.fullScreen')}</span>
-                                                        <span className="text-xs text-white/40">{t('game.bios.immersiveMode')}</span>
+                                                        <span className="font-bold text-sm uppercase">{t('game.bios.fullScreen')}</span>
+                                                        <span className="text-[10px] text-white/40">{t('game.bios.immersiveMode')}</span>
                                                     </div>
                                                 </div>
                                                 <button
                                                     onClick={toggleFullscreen}
                                                     className={cn(
-                                                        "px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border",
+                                                        "px-4 py-2 text-xs font-bold uppercase tracking-wider border-2 transition-all",
                                                         isFullscreen
-                                                            ? "bg-white text-black border-white hover:bg-white/90"
-                                                            : "bg-transparent text-white border-white/20 hover:bg-white/10"
+                                                            ? "bg-white text-black border-white"
+                                                            : "bg-transparent text-white border-white/40 hover:border-white"
                                                     )}
                                                 >
                                                     {isFullscreen ? t('game.bios.fullScreenExit') : t('game.bios.fullScreenEnter')}
@@ -182,40 +184,42 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                                         </div>
 
                                         <div className="space-y-4">
-                                            <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider">Graphics Quality</h3>
+                                            <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider border-b border-white/20 pb-2 flex items-center gap-2">
+                                                 <span className="w-2 h-2 bg-white/40"/> Graphics Quality
+                                            </h3>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <button
                                                     onClick={() => applyPreset('ultra')}
                                                     className={cn(
-                                                        "p-4 rounded-xl border text-left transition-all relative overflow-hidden",
+                                                        "p-4 border-2 text-left transition-all relative overflow-hidden group",
                                                         getPreset() === 'ultra'
-                                                            ? "bg-white/10 border-white/40 shadow-lg"
-                                                            : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10"
+                                                            ? "bg-white/10 border-white text-white"
+                                                            : "bg-black border-zinc-800 hover:border-white/50 text-zinc-500"
                                                     )}
                                                 >
                                                     <div className="relative z-10">
-                                                        <div className="flex justify-between items-center mb-1">
-                                                            <div className="font-bold text-white">High Fidelity</div>
-                                                            {getPreset() === 'ultra' && <Check className="w-4 h-4 text-white" />}
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <div className="font-bold uppercase text-sm">High Fidelity</div>
+                                                            {getPreset() === 'ultra' && <div className="w-2 h-2 bg-white animate-pulse" />}
                                                         </div>
-                                                        <div className="text-xs text-white/50">Blur, Shadows, Vibrancy.</div>
+                                                        <div className="text-[10px] opacity-60">Blur, Shadows, Vibrancy enabled. visual++</div>
                                                     </div>
                                                 </button>
                                                 <button
                                                     onClick={() => applyPreset('performance')}
                                                     className={cn(
-                                                        "p-4 rounded-xl border text-left transition-all relative overflow-hidden",
+                                                        "p-4 border-2 text-left transition-all relative overflow-hidden group",
                                                         getPreset() === 'performance'
-                                                            ? "bg-white/10 border-white/40 shadow-lg"
-                                                            : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10"
+                                                            ? "bg-white/10 border-white text-white"
+                                                            : "bg-black border-zinc-800 hover:border-white/50 text-zinc-500"
                                                     )}
                                                 >
                                                      <div className="relative z-10">
-                                                        <div className="flex justify-between items-center mb-1">
-                                                            <div className="font-bold text-white">Performance</div>
-                                                            {getPreset() === 'performance' && <Check className="w-4 h-4 text-white" />}
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <div className="font-bold uppercase text-sm">Performance</div>
+                                                            {getPreset() === 'performance' && <div className="w-2 h-2 bg-white animate-pulse" />}
                                                         </div>
-                                                        <div className="text-xs text-white/50">Max FPS. No effects.</div>
+                                                        <div className="text-[10px] opacity-60">Max FPS. Minimal effects. speed++</div>
                                                     </div>
                                                 </button>
                                             </div>
@@ -224,15 +228,15 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                                             <div className="pt-2 grid grid-cols-2 gap-2">
                                                 <button 
                                                     onClick={() => setReduceMotion(!reduceMotion)}
-                                                    className={cn("text-xs p-2 rounded-lg border text-center transition-all", reduceMotion ? "bg-white/10 border-white/30 text-white" : "bg-transparent border-transparent text-white/30 hover:bg-white/5")}  
+                                                    className={cn("text-[10px] uppercase font-bold p-2 border transition-all hover:bg-white/5", reduceMotion ? "border-white text-white" : "border-zinc-800 text-zinc-600")}  
                                                 >
-                                                    Reduce Motion
+                                                    [ {reduceMotion ? 'X' : ' '} ] Reduce Motion
                                                 </button>
                                                 <button 
                                                    onClick={() => setDisableGradients(!disableGradients)}
-                                                   className={cn("text-xs p-2 rounded-lg border text-center transition-all", disableGradients ? "bg-white/10 border-white/30 text-white" : "bg-transparent border-transparent text-white/30 hover:bg-white/5")}  
+                                                   className={cn("text-[10px] uppercase font-bold p-2 border transition-all hover:bg-white/5", disableGradients ? "border-white text-white" : "border-zinc-800 text-zinc-600")}  
                                                 >
-                                                    Simple Colors
+                                                    [ {disableGradients ? 'X' : ' '} ] Simple Colors
                                                 </button>
                                             </div>
                                         </div>
@@ -241,54 +245,70 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
 
                                 {activeTab === 'audio' && (
                                     <div className="space-y-8">
-                                        <div className="p-6 rounded-2xl bg-white/5 border border-white/5 space-y-6">
+                                        <div className="p-6 bg-zinc-950 border border-zinc-800 space-y-8">
                                             {/* Master */}
                                             <div className="space-y-4">
-                                                <div className="flex justify-between text-white/80">
+                                                <div className="flex justify-between text-white border-b border-zinc-800 pb-2">
                                                      <span className="flex items-center gap-2 font-bold text-sm uppercase tracking-wider">
-                                                        <Volume2 className="w-4 h-4" /> Master
+                                                        <Volume2 className="w-4 h-4" /> Master Output
                                                     </span>
-                                                    <span className="font-mono text-sm text-white/50">{volumes.master}%</span>
+                                                    <span className="font-mono text-sm text-white">{volumes.master.toString().padStart(3, '0')}%</span>
                                                 </div>
-                                                <input
-                                                    type="range"
-                                                    min="0" max="100"
-                                                    value={volumes.master}
-                                                    onChange={(e) => updateVolume('master', parseInt(e.target.value))}
-                                                    className="w-full h-2 bg-black/40 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white hover:[&::-webkit-slider-thumb]:scale-110 transition-all"
-                                                />
+                                                <div className="relative h-4 bg-zinc-900 border border-zinc-700 w-full">
+                                                    <div 
+                                                        className="absolute top-0 left-0 h-full bg-white" 
+                                                        style={{ width: `${volumes.master}%` }}
+                                                    />
+                                                    <input
+                                                        type="range"
+                                                        min="0" max="100"
+                                                        value={volumes.master}
+                                                        onChange={(e) => updateVolume('master', parseInt(e.target.value))}
+                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    />
+                                                </div>
                                             </div>
 
-                                            <div className="h-px bg-white/10" />
-
                                             {/* Music */}
-                                             <div className="space-y-3">
-                                                <div className="flex justify-between text-white/80">
-                                                    <span className="font-medium text-sm text-white/70">Music</span>
-                                                    <span className="font-mono text-xs text-white/40">{volumes.music}%</span>
+                                             <div className="space-y-2">
+                                                <div className="flex justify-between text-zinc-400">
+                                                    <span className="font-bold text-xs uppercase tracking-wider">Music Level</span>
+                                                    <span className="font-mono text-xs">{volumes.music.toString().padStart(3, '0')}%</span>
                                                 </div>
-                                                <input
-                                                    type="range"
-                                                    min="0" max="100"
-                                                    value={volumes.music}
-                                                    onChange={(e) => updateVolume('music', parseInt(e.target.value))}
-                                                    className="w-full h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/70 hover:[&::-webkit-slider-thumb]:bg-white transition-all"
-                                                />
+                                                 <div className="relative h-2 bg-zinc-900 border border-zinc-800 w-full group hover:border-white/50 transition-colors">
+                                                    <div 
+                                                        className="absolute top-0 left-0 h-full bg-zinc-400 group-hover:bg-white transition-colors" 
+                                                        style={{ width: `${volumes.music}%` }}
+                                                    />
+                                                    <input
+                                                        type="range"
+                                                        min="0" max="100"
+                                                        value={volumes.music}
+                                                        onChange={(e) => updateVolume('music', parseInt(e.target.value))}
+                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    />
+                                                </div>
                                             </div>
 
                                             {/* SFX */}
-                                            <div className="space-y-3">
-                                                <div className="flex justify-between text-white/80">
-                                                    <span className="font-medium text-sm text-white/70">SFX & Interface</span>
-                                                    <span className="font-mono text-xs text-white/40">{volumes.sfx}%</span>
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between text-zinc-400">
+                                                    <span className="font-bold text-xs uppercase tracking-wider">SFX & Interface</span>
+                                                    <span className="font-mono text-xs">{volumes.sfx.toString().padStart(3, '0')}%</span>
                                                 </div>
-                                                <input
-                                                    type="range"
-                                                    min="0" max="100"
-                                                    value={volumes.sfx}
-                                                    onChange={(e) => updateVolume('sfx', parseInt(e.target.value))}
-                                                    className="w-full h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/70 hover:[&::-webkit-slider-thumb]:bg-white transition-all"
-                                                />
+                                                <div className="relative h-2 bg-zinc-900 border border-zinc-800 w-full group hover:border-white/50 transition-colors">
+                                                    <div 
+                                                        className="absolute top-0 left-0 h-full bg-zinc-400 group-hover:bg-white transition-colors" 
+                                                        style={{ width: `${volumes.sfx}%` }}
+                                                    />
+                                                    <input
+                                                        type="range"
+                                                        min="0" max="100"
+                                                        value={volumes.sfx}
+                                                        onChange={(e) => updateVolume('sfx', parseInt(e.target.value))}
+                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -297,20 +317,22 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                                 {activeTab === 'system' && (
                                     <>
                                         <div className="space-y-4">
-                                            <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider">{t('settings.appearance.languageTitle')}</h3>
+                                            <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider border-b border-white/20 pb-2 flex items-center gap-2">
+                                                 <span className="w-2 h-2 bg-white/40"/> {t('settings.appearance.languageTitle')}
+                                            </h3>
                                             <div className="grid grid-cols-2 gap-2">
                                                 {SUPPORTED_LOCALES.map((l) => (
                                                     <button
                                                         key={l.locale}
                                                         onClick={() => { feedback.click(); setLocale(l.locale); }}
                                                         className={cn(
-                                                            "flex justify-between items-center p-3 rounded-lg border transition-all",
+                                                            "flex justify-between items-center p-3 border-2 transition-all hover:bg-white/5",
                                                             locale === l.locale
-                                                                ? "bg-white/10 border-white/30 text-white"
-                                                                : "bg-white/5 border-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                                                                ? "border-white bg-white/10 text-white"
+                                                                : "border-zinc-800 text-zinc-500 hover:text-white hover:border-white/50"
                                                         )}
                                                     >
-                                                        <span className="text-sm font-medium">{l.label}</span>
+                                                        <span className="text-xs font-bold uppercase tracking-wider">{l.label}</span>
                                                         {locale === l.locale && <Check className="w-3 h-3 text-white" />}
                                                     </button>
                                                 ))}
@@ -318,24 +340,26 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                                         </div>
 
                                         <div className="pt-8 space-y-4">
-                                            <h3 className="text-sm font-bold text-red-400/50 uppercase tracking-wider">Danger Zone</h3>
+                                            <h3 className="text-xs font-bold text-red-500 uppercase tracking-wider border-b border-red-900/50 pb-2 flex items-center gap-2">
+                                                 <span className="w-2 h-2 bg-red-500"/> Danger Zone
+                                            </h3>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <button
                                                     onClick={handleSoftReset}
-                                                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-white/5 hover:bg-blue-500/10 border border-white/5 hover:border-blue-500/30 transition-all group"
+                                                    className="flex flex-col items-center justify-center gap-2 p-4 border border-blue-900/30 hover:bg-blue-900/10 hover:border-blue-500 transition-all group"
                                                 >
-                                                    <RefreshCw className="w-6 h-6 text-blue-400 group-hover:rotate-180 transition-transform duration-500" />
-                                                    <span className="text-sm font-medium text-blue-100">{t('game.bios.softReset')}</span>
-                                                    <span className="text-[10px] text-white/30">{t('game.bios.softResetHint')}</span>
+                                                    <RefreshCw className="w-6 h-6 text-blue-500 group-hover:rotate-180 transition-transform duration-500" />
+                                                    <span className="text-sm font-bold uppercase text-blue-400">{t('game.bios.softReset')}</span>
+                                                    <span className="text-[10px] text-white/30 text-center">{t('game.bios.softResetHint')}</span>
                                                 </button>
 
                                                 <button
                                                     onClick={handleFactoryReset}
-                                                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/30 transition-all group"
+                                                    className="flex flex-col items-center justify-center gap-2 p-4 border border-red-900/30 hover:bg-red-900/10 hover:border-red-500 transition-all group"
                                                 >
-                                                    <Trash2 className="w-6 h-6 text-red-400 group-hover:shake" />
-                                                    <span className="text-sm font-medium text-red-100">{t('game.bios.factoryReset')}</span>
-                                                    <span className="text-[10px] text-white/30">{t('game.bios.factoryResetHint')}</span>
+                                                    <Trash2 className="w-6 h-6 text-red-500 group-hover:shake" />
+                                                    <span className="text-sm font-bold uppercase text-red-500">{t('game.bios.factoryReset')}</span>
+                                                    <span className="text-[10px] text-white/30 text-center">{t('game.bios.factoryResetHint')}</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -347,8 +371,9 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                 </div>
                 
                 {/* Footer */}
-                <div className="p-3 border-t border-white/5 bg-black/40 text-center text-[10px] text-white/20 font-mono uppercase tracking-wider">
-                    {pkg.build.productName} v{pkg.version} • {activeTab.toUpperCase()} CONFIG • {t('game.bios.footer.moreSettings')}
+                <div className="p-2 border-t border-white bg-black text-center text-[10px] text-white/40 font-mono uppercase tracking-widest flex justify-between px-4">
+                    <span>{pkg.build.productName} v{pkg.version}</span>
+                    <span>{activeTab.toUpperCase()} CONFIG</span>
                 </div>
             </motion.div>
         </div>

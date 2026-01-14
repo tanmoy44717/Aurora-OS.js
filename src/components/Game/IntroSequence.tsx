@@ -101,9 +101,17 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
               <span className="text-white/70 text-sm tracking-[0.2em] uppercase font-medium group-hover:text-white transition-colors">
                 {t('game.intro.initialize')}
               </span>
-              <span className="text-white/30 text-[10px] tracking-widest animate-pulse">
+              <motion.span 
+                className="text-white/30 text-[10px] tracking-widest"
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{ 
+                  duration: 2.5, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+              >
                 {t('game.intro.clickToStart')}
-              </span>
+              </motion.span>
             </div>
           </motion.button>
         )}

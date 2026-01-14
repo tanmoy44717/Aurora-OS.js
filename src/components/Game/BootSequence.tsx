@@ -161,8 +161,8 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
     }, [progress, isLoaded, onComplete]);
 
     return (
-        <div className="fixed inset-0 bg-[#0c0c0c] text-slate-300 font-mono p-10 text-sm cursor-none z-[45000] flex flex-col justify-between selection:bg-pink-500/30">
-            <div className="overflow-hidden flex-1 font-medium tracking-tight">
+        <div className="fixed inset-0 bg-black text-slate-300 font-mono p-10 text-sm cursor-none z-[45000] flex flex-col justify-between selection:bg-white selection:text-black">
+            <div className="overflow-hidden flex-1 font-medium">
                 {logs.map((log, i) => {
                     if (!log) return null; // Defensive check
                     return (
@@ -181,9 +181,9 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
             </div>
 
             <div className="w-full max-w-3xl mx-auto mb-12 opacity-80">
-                <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-1 w-full bg-zinc-900 border border-white/20 rounded-full overflow-hidden">
                     <div
-                        className="h-full bg-gradient-to-r from-pink-500 to-cyan-400 transition-all duration-300 ease-out"
+                        className="h-full bg-white transition-all duration-300 ease-out shadow-[0_0_10px_2px_rgba(255,255,255,0.3)]"
                         style={{ width: `${progress}%` }}
                     />
                 </div>

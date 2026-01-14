@@ -183,7 +183,7 @@ export function Onboarding({ onContinue }: OnboardingProps) {
     ];
 
     return (
-        <GameScreenLayout zIndex={40000}>
+        <GameScreenLayout zIndex={40000} mode="glass">
             {/* Modal Overlay matching SettingsModal */}
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200 p-4 md:p-0">
                 <Card className="w-full max-w-lg bg-zinc-900/90 backdrop-blur-xl border-white/10 shadow-2xl p-2 my-auto max-h-[90vh] flex flex-col">

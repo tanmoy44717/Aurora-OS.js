@@ -119,6 +119,7 @@ export function LoginScreen() {
     return (
         <GameScreenLayout
             zIndex={50000}
+            mode="glass"
             footerActions={
                 <>
                     <button
@@ -126,7 +127,7 @@ export function LoginScreen() {
                             softReset();
                             window.location.reload();
                         }}
-                        className="hover:text-white/40 transition-colors"
+                        className="hover:text-white transition-colors"
                     >
                         {t('login.softReset')}
                     </button>
@@ -138,7 +139,7 @@ export function LoginScreen() {
                                 window.location.reload();
                             }
                         }}
-                        className="hover:text-red-400/60 transition-colors"
+                        className="hover:text-red-400 transition-colors"
                     >
                         {t('login.hardReset')}
                     </button>

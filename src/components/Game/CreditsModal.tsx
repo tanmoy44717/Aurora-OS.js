@@ -123,29 +123,28 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
     ];
 
     const activeCategory = CREDITS_DATA.find(c => c.id === activeTab);
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
             <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                className="bg-zinc-900/95 border border-white/10 max-w-4xl w-full rounded-2xl shadow-2xl relative flex flex-col overflow-hidden max-h-[85vh]"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="terminal-card max-w-4xl w-full shadow-2xl relative flex flex-col overflow-hidden max-h-[85vh] font-mono text-white"
             >
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-white/5 bg-zinc-900/50">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                            <span className="text-xl">✨</span> 
+                <div className="flex justify-between items-center p-6 border-b border-white bg-black">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-white text-black border border-white">
+                            <Sparkles className="w-5 h-5 text-black" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-white tracking-wide">Credits</h2>
-                            <p className="text-xs text-white/40 uppercase tracking-widest font-mono mt-0.5">Aurora OS.js v{pkg.version}</p>
+                            <h2 className="text-xl font-bold tracking-widest uppercase">Credits</h2>
+                            <p className="text-xs text-white/50 uppercase tracking-widest font-mono mt-0.5">Aurora OS.js v{pkg.version}</p>
                         </div>
                     </div>
                     <button
                         onClick={() => { feedback.click(); onClose(); }}
-                        className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white"
+                        className="p-2 hover:bg-white hover:text-black transition-colors border border-transparent hover:border-white"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -153,16 +152,16 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
 
                 <div className="flex flex-1 overflow-hidden">
                     {/* Sidebar Tabs */}
-                    <div className="w-64 bg-black/20 border-r border-white/5 p-4 space-y-1.5 overflow-y-auto custom-scrollbar shrink-0">
+                    <div className="w-64 bg-black border-r border-white p-4 space-y-1.5 overflow-y-auto custom-scrollbar shrink-0">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => { feedback.click(); setActiveTab(tab.id); }}
                                 className={cn(
-                                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-medium transition-all duration-200 uppercase tracking-wider",
+                                    "w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all duration-100 border-2",
                                     activeTab === tab.id
-                                        ? "bg-white text-black shadow-lg shadow-white/10 scale-[1.02]"
-                                        : "text-white/60 hover:text-white hover:bg-white/5 hover:scale-[1.02]"
+                                        ? "bg-white text-black border-white shadow-[2px_2px_0_0_rgba(0,0,0,0.5)]"
+                                        : "bg-black text-white/50 border-transparent hover:border-white/50 hover:text-white"
                                 )}
                             >
                                 <tab.icon className={cn("w-4 h-4", activeTab === tab.id ? "text-black" : "text-white/50")} />
@@ -172,24 +171,24 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 p-8 overflow-y-auto bg-white/2">
+                    <div className="flex-1 p-8 overflow-y-auto bg-black bg-size-[16px_16px] bg-[radial-gradient(#ffffff1a_1px,transparent_1px)]">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={activeTab}
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.2 }}
+                                transition={{ duration: 0.1 }}
                                 className="h-full"
                             >
                                 {activeTab === 'contribute' ? (
                                     <div className="h-full flex flex-col items-center justify-center text-center space-y-8">
-                                        <div className="p-6 rounded-full bg-(--accent-user)/10 text-(--accent-user) border border-(--accent-user)/20 shadow-[0_0_50px_rgba(var(--accent-user-rgb),0.2)]">
+                                        <div className="p-6 border-2 border-white bg-white/5 text-white shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]">
                                             <Bug className="w-12 h-12" />
                                         </div>
-                                        <div className="space-y-2 max-w-md">
-                                            <h3 className="text-2xl font-bold text-white">Find a bug? Want to contribute?</h3>
-                                            <p className="text-white/60 leading-relaxed">
+                                        <div className="space-y-4 max-w-md">
+                                            <h3 className="text-2xl font-bold uppercase tracking-widest text-white">Contribute</h3>
+                                            <p className="text-white/60 leading-relaxed text-sm">
                                                 Aurora OS.js is open source. Help us squash bugs, improve performance, or design the next big feature.
                                             </p>
                                         </div>
@@ -198,21 +197,21 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
                                             target="_blank" 
                                             rel="noreferrer"
                                             onClick={() => feedback.click()}
-                                            className="px-8 py-3 rounded-xl bg-(--accent-user) hover:bg-(--accent-user)/80 text-white font-bold transition-all shadow-lg shadow-(--accent-user)/20 hover:scale-105"
+                                            className="px-8 py-3 bg-white text-black font-bold uppercase tracking-widest hover:bg-white/90 transition-all border-2 border-transparent hover:border-white shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
                                         >
                                             Report Issue on GitHub
                                         </a>
                                     </div>
                                 ) : activeCategory ? (
                                     <div className="space-y-6">
-                                        <div className="flex items-center gap-3 pb-4 border-b border-white/5">
-                                             <activeCategory.icon className="w-6 h-6 text-white/20" />
-                                             <h3 className="text-2xl font-bold text-white">{activeCategory.title}</h3>
+                                        <div className="flex items-center gap-3 pb-4 border-b border-white/20">
+                                             <activeCategory.icon className="w-6 h-6 text-white/40" />
+                                             <h3 className="text-2xl font-bold uppercase tracking-widest text-white">{activeCategory.title}</h3>
                                         </div>
 
                                         {/* Variant: Special / Content */}
                                         {activeCategory.type === 'special' && activeCategory.content && (
-                                            <div className="bg-white/5 rounded-xl p-8 border border-white/5 leading-loose">
+                                            <div className="bg-zinc-950 border border-zinc-800 p-8 leading-loose text-white/80 font-mono text-sm shadow-inner">
                                                 {activeCategory.content}
                                             </div>
                                         )}
@@ -220,7 +219,7 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
                                         {/* Variant: Text (Simple) */}
                                         {activeCategory.type === 'text' && activeCategory.content && (
                                              <div className="px-1 py-8">
-                                                <p className="text-white/60 italic leading-relaxed text-xl font-serif opacity-80 text-center">
+                                                <p className="text-white/60 italic leading-relaxed text-lg font-serif opacity-80 text-center border-l-2 border-white/20 pl-6">
                                                     {activeCategory.content}
                                                 </p>
                                              </div>
@@ -232,15 +231,15 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
                                                 {activeCategory.contributors.map((contributor) => (
                                                     <div 
                                                         key={contributor.name}
-                                                        className="group relative p-5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all flex flex-col gap-3"
+                                                        className="group relative p-5 bg-black border border-white/20 hover:border-white transition-all flex flex-col gap-3 shadow-none hover:shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
                                                     >
                                                         <div className="flex justify-between items-start">
                                                             <div>
-                                                                <div className="font-bold text-lg text-white group-hover:text-(--accent-user) transition-colors">
+                                                                <div className="font-bold text-lg text-white group-hover:text-black group-hover:bg-white inline-block px-1 transition-colors uppercase">
                                                                     {contributor.name}
                                                                 </div>
                                                                 {contributor.role && (
-                                                                    <div className="text-xs font-mono text-white/60 uppercase tracking-wider mt-1">
+                                                                    <div className="text-xs font-mono text-white/50 uppercase tracking-wider mt-1 border-l-2 border-white/20 pl-2">
                                                                         {contributor.role}
                                                                     </div>
                                                                 )}
@@ -250,7 +249,7 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
                                                                     href={contributor.github}
                                                                     target="_blank"
                                                                     rel="noreferrer"
-                                                                    className="p-2 -mr-2 -mt-2 rounded-full hover:bg-white/10 text-white/30 hover:text-white transition-colors"
+                                                                    className="p-1 hover:bg-white hover:text-black text-white/40 transition-colors border border-transparent hover:border-white"
                                                                     title="GitHub Profile"
                                                                 >
                                                                     <Github className="w-5 h-5" />
@@ -259,7 +258,7 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
                                                         </div>
 
                                                         {contributor.description && (
-                                                            <p className="text-sm text-white/50 leading-relaxed border-l-2 border-white/5 pl-3">
+                                                            <p className="text-[10px] text-white/60 leading-relaxed border-t border-white/10 pt-2 mt-1">
                                                                 {contributor.description}
                                                             </p>
                                                         )}
@@ -272,7 +271,7 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
                                                                         href={social.url}
                                                                         target="_blank"
                                                                         rel="noreferrer"
-                                                                        className="text-[10px] px-2 py-1 rounded-md bg-white/5 hover:bg-(--accent-user)/20 text-white/40 hover:text-(--accent-user) transition-colors border border-white/5 hover:border-(--accent-user)/30"
+                                                                        className="text-[10px] px-2 py-1 bg-zinc-900 hover:bg-white hover:text-black text-zinc-500 border border-zinc-800 hover:border-white transition-all uppercase tracking-wider"
                                                                     >
                                                                         {social.label}
                                                                     </a>
@@ -291,8 +290,9 @@ export function CreditsModal({ onClose }: CreditsModalProps) {
                 </div>
                 
                 {/* Footer */}
-                <div className="p-3 border-t border-white/5 bg-black/40 text-center text-[10px] text-white/20 font-mono uppercase tracking-wider">
-                     AURORA OS.js • {activeTab === 'contribute' ? 'CONTRIBUTE' : 'CREDITS'} • THANK YOU FOR PLAYING
+                <div className="p-2 border-t border-white bg-black text-center text-[10px] text-white/40 font-mono uppercase tracking-widest flex justify-between px-4">
+                     <span>AURORA OS.js</span>
+                     <span>{activeTab === 'contribute' ? 'CONTRIBUTE' : 'CREDITS'}</span>
                 </div>
             </motion.div>
         </div>
