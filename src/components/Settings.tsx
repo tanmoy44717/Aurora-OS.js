@@ -138,7 +138,17 @@ export function Settings({ owner }: { owner?: string }) {
     wifiNetwork,
     setWifiNetwork,
     bluetoothDevice,
-    setBluetoothDevice
+    setBluetoothDevice,
+    networkConfigMode,
+    setNetworkConfigMode,
+    networkIP,
+    setNetworkIP,
+    networkGateway,
+    setNetworkGateway,
+    networkSubnetMask,
+    setNetworkSubnetMask,
+    networkDNS,
+    setNetworkDNS
   } = useAppContext();
   const { users, addUser, updateUser, deleteUser, currentUser } = useFileSystem();
   const { activeUser: desktopUser } = useAppContext();
@@ -556,6 +566,16 @@ export function Settings({ owner }: { owner?: string }) {
             wifiNetwork={wifiNetwork}
             setWifiNetwork={setWifiNetwork}
             bluetoothDevice={bluetoothDevice}
+            networkConfigMode={networkConfigMode}
+            setNetworkConfigMode={setNetworkConfigMode}
+            networkIP={networkIP}
+            setNetworkIP={setNetworkIP}
+            networkGateway={networkGateway}
+            setNetworkGateway={setNetworkGateway}
+            networkSubnetMask={networkSubnetMask}
+            setNetworkSubnetMask={setNetworkSubnetMask}
+            networkDNS={networkDNS}
+            setNetworkDNS={setNetworkDNS}
           />
         )}
 

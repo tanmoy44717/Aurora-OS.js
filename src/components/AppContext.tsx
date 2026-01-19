@@ -51,6 +51,16 @@ interface AppContextType {
   setWifiNetwork: (network: string) => void;
   bluetoothDevice: string;
   setBluetoothDevice: (device: string) => void;
+  networkConfigMode: 'auto' | 'manual';
+  setNetworkConfigMode: (mode: 'auto' | 'manual') => void;
+  networkIP: string;
+  setNetworkIP: (ip: string) => void;
+  networkGateway: string;
+  setNetworkGateway: (gateway: string) => void;
+  networkSubnetMask: string;
+  setNetworkSubnetMask: (mask: string) => void;
+  networkDNS: string;
+  setNetworkDNS: (dns: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -84,6 +94,11 @@ interface SystemConfig {
   bluetoothEnabled: boolean;
   wifiNetwork: string;
   bluetoothDevice: string;
+  networkConfigMode: 'auto' | 'manual';
+  networkIP: string;
+  networkGateway: string;
+  networkSubnetMask: string;
+  networkDNS: string;
 }
 
 const DEFAULT_PREFERENCES: UserPreferences = {
@@ -138,6 +153,11 @@ const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   bluetoothEnabled: false,
   wifiNetwork: 'FreeWifi-Secure',
   bluetoothDevice: 'AirPods Pro',
+  networkConfigMode: 'auto',
+  networkIP: '192.168.1.100',
+  networkGateway: '192.168.1.1',
+  networkSubnetMask: '255.255.255.0',
+  networkDNS: '8.8.8.8',
 };
 
 // Helper: Get key for specific user
@@ -256,7 +276,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Destructure for easy access (User preferences take precedence/contain the effective value)
   const { accentColor, themeMode, wallpaper, blurEnabled, reduceMotion, disableShadows, disableGradients } = preferences;
-  const { devMode, exposeRoot, locale, onboardingComplete, wifiEnabled, bluetoothEnabled, wifiNetwork, bluetoothDevice } = systemConfig;
+  const { devMode, exposeRoot, locale, onboardingComplete, wifiEnabled, bluetoothEnabled, wifiNetwork, bluetoothDevice, networkConfigMode, networkIP, networkGateway, networkSubnetMask, networkDNS } = systemConfig;
 
   // Function to switch context to a different user
   const switchUser = useCallback((username: string) => {
@@ -318,6 +338,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setBluetoothEnabled = (enabled: boolean) => setSystemConfig(s => ({ ...s, bluetoothEnabled: enabled }));
   const setWifiNetwork = (network: string) => setSystemConfig(s => ({ ...s, wifiNetwork: network }));
   const setBluetoothDevice = (device: string) => setSystemConfig(s => ({ ...s, bluetoothDevice: device }));
+  const setNetworkConfigMode = (mode: 'auto' | 'manual') => setSystemConfig(s => ({ ...s, networkConfigMode: mode }));
+  const setNetworkIP = (ip: string) => setSystemConfig(s => ({ ...s, networkIP: ip }));
+  const setNetworkGateway = (gateway: string) => setSystemConfig(s => ({ ...s, networkGateway: gateway }));
+  const setNetworkSubnetMask = (mask: string) => setSystemConfig(s => ({ ...s, networkSubnetMask: mask }));
+  const setNetworkDNS = (dns: string) => setSystemConfig(s => ({ ...s, networkDNS: dns }));
 
   // Sync locale from Electron if available and not explicitly stored
   useEffect(() => {
@@ -409,6 +434,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setWifiNetwork,
       bluetoothDevice,
       setBluetoothDevice,
+      networkConfigMode,
+      setNetworkConfigMode,
+      networkIP,
+      setNetworkIP,
+      networkGateway,
+      setNetworkGateway,
+      networkSubnetMask,
+      setNetworkSubnetMask,
+      networkDNS,
+      setNetworkDNS,
       switchUser,
       activeUser,
       isLocked,

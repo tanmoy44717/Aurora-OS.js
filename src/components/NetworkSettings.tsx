@@ -5,6 +5,14 @@ import { GlassButton } from '@/components/ui/GlassButton';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { useI18n } from '../i18n/index';
 import { cn } from '@/components/ui/utils';
+import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface NetworkSettingsProps {
   accentColor: string;
@@ -15,6 +23,16 @@ interface NetworkSettingsProps {
   wifiNetwork: string;
   setWifiNetwork: (network: string) => void;
   bluetoothDevice: string;
+  networkConfigMode: 'auto' | 'manual';
+  setNetworkConfigMode: (mode: 'auto' | 'manual') => void;
+  networkIP: string;
+  setNetworkIP: (ip: string) => void;
+  networkGateway: string;
+  setNetworkGateway: (gateway: string) => void;
+  networkSubnetMask: string;
+  setNetworkSubnetMask: (mask: string) => void;
+  networkDNS: string;
+  setNetworkDNS: (dns: string) => void;
 }
 
 export function NetworkSettings({
@@ -26,6 +44,16 @@ export function NetworkSettings({
   wifiNetwork,
   setWifiNetwork,
   bluetoothDevice,
+  networkConfigMode,
+  setNetworkConfigMode,
+  networkIP,
+  setNetworkIP,
+  networkGateway,
+  setNetworkGateway,
+  networkSubnetMask,
+  setNetworkSubnetMask,
+  networkDNS,
+  setNetworkDNS,
 }: NetworkSettingsProps) {
   const { t } = useI18n();
 
@@ -36,6 +64,98 @@ export function NetworkSettings({
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = useState<string>('');
   const [networkPassword, setNetworkPassword] = useState('');
+
+  // Network Management Page State
+  const [showNetworkDetails, setShowNetworkDetails] = useState(false);
+
+  // Manual Configuration Temporary State
+  const [tempIP, setTempIP] = useState(networkIP);
+  const [tempGateway, setTempGateway] = useState(networkGateway);
+  const [tempSubnetMask, setTempSubnetMask] = useState(networkSubnetMask);
+  const [tempDNS, setTempDNS] = useState(networkDNS);
+  const [networkConfigurationLoading, setNetworkConfigurationLoading] = useState(false);
+
+  const handleDHCPAttribution = () => {
+    setNetworkConfigurationLoading(true);
+    generateAutoIP();
+    setTimeout(() => setNetworkConfigurationLoading(false), 2000);
+  }
+
+  // Generate automatic IP configuration (DHCP simulation)
+  const generateAutoIP = () => {
+    const randomOctet = Math.floor(Math.random() * 150) + 100; // 100-249
+    const newIP = `192.168.1.${randomOctet}`;
+    const newGateway = '192.168.1.1';
+    const newSubnetMask = '255.255.255.0';
+    const newDNS = '8.8.8.8';
+
+    setNetworkIP(newIP);
+    setNetworkGateway(newGateway);
+    setNetworkSubnetMask(newSubnetMask);
+    setNetworkDNS(newDNS);
+
+    setTempIP(newIP);
+    setTempGateway(newGateway);
+    setTempSubnetMask(newSubnetMask);
+    setTempDNS(newDNS);
+  };
+
+  // Validate IP address format
+  const isValidIP = (ip: string): boolean => {
+    const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+    const match = ip.match(ipPattern);
+    if (!match) return false;
+
+    for (let i = 1; i <= 4; i++) {
+      const octet = parseInt(match[i]);
+      if (octet < 0 || octet > 255) return false;
+    }
+    return true;
+  };
+
+  // Validate network configuration coherence
+  const validateNetworkConfig = (): { valid: boolean; error?: string } => {
+    if (!isValidIP(tempIP)) {
+      return { valid: false, error: t('settings.network.invalidIP') };
+    }
+    if (!isValidIP(tempGateway)) {
+      return { valid: false, error: t('settings.network.invalidGateway') };
+    }
+    if (!isValidIP(tempSubnetMask)) {
+      return { valid: false, error: t('settings.network.invalidSubnetMask') };
+    }
+    if (!isValidIP(tempDNS)) {
+      return { valid: false, error: t('settings.network.invalidDNS') };
+    }
+
+    // Check if IP and gateway are in the same subnet
+    const ipParts = tempIP.split('.').map(Number);
+    const gatewayParts = tempGateway.split('.').map(Number);
+    const maskParts = tempSubnetMask.split('.').map(Number);
+
+    for (let i = 0; i < 4; i++) {
+      if ((ipParts[i] & maskParts[i]) !== (gatewayParts[i] & maskParts[i])) {
+        return { valid: false, error: t('settings.network.gatewayNotInSubnet') };
+      }
+    }
+
+    return { valid: true };
+  };
+
+  // Handle manual configuration save
+  const handleSaveManualConfig = () => {
+    const validation = validateNetworkConfig();
+    if (!validation.valid) {
+      toast.error(validation.error);
+      return;
+    }
+
+    setNetworkIP(tempIP);
+    setNetworkGateway(tempGateway);
+    setNetworkSubnetMask(tempSubnetMask);
+    setNetworkDNS(tempDNS);
+    toast.success(t('settings.network.configSaved'));
+  };
 
   // Generate random Wi-Fi networks
   const generateWifiNetworks = () => {
@@ -98,13 +218,30 @@ export function NetworkSettings({
   };
 
   const handleWifiBlockClick = () => {
-    setShowWifiList(true);
-    loadWifiNetworks();
+    if (wifiEnabled && wifiNetwork) {
+      // Si connecté, aller vers la page de détails du réseau
+      setShowNetworkDetails(true);
+      // Generate new auto IP when entering network details if in auto mode
+      if (networkConfigMode === 'auto') {
+        generateAutoIP();
+      }
+    } else {
+      // Sinon, aller vers la liste des réseaux
+      setShowWifiList(true);
+      loadWifiNetworks();
+    }
   };
 
   const handleBackToMain = () => {
     setShowWifiList(false);
+    setShowNetworkDetails(false);
     setWifiNetworks([]);
+  };
+
+  const handleDisconnectWifi = () => {
+    setWifiEnabled(false);
+    setWifiNetwork('');
+    handleBackToMain();
   };
 
   const handleNetworkClick = (network: {name: string, signal: number, secured: boolean}) => {
@@ -138,7 +275,7 @@ export function NetworkSettings({
     <div>
       <h2 className="text-2xl text-white mb-6">{t('settings.sections.network')}</h2>
 
-      {!showWifiList ? (
+      {!showWifiList && !showNetworkDetails ? (
         <>
           {/* Wi-Fi Section */}
           <button
@@ -185,6 +322,174 @@ export function NetworkSettings({
                 checked={bluetoothEnabled}
                 onCheckedChange={(checked) => setBluetoothEnabled(checked === true)}
               />
+            </div>
+          </div>
+        </>
+      ) : showNetworkDetails ? (
+        <>
+          {/* Network Management Page */}
+          <div className="bg-black/20 rounded-xl border border-white/5 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleBackToMain}
+                  className="p-1 hover:bg-white/10 rounded transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5 text-white rotate-180" />
+                </button>
+                <h3 className="text-sm font-medium text-white">{wifiNetwork}</h3>
+              </div>
+              <GlassButton
+                onClick={handleDisconnectWifi}
+                variant="danger"
+                className="text-xs px-3 py-1.5 h-auto"
+              >
+                {t('settings.network.disconnect')}
+              </GlassButton>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {/* Configuration Mode Selector */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h4 className="text-white font-medium mb-3">{t('settings.network.configurationMode')}</h4>
+                <Select
+                  value={networkConfigMode}
+                  onValueChange={(value: 'auto' | 'manual') => {
+                    setNetworkConfigMode(value);
+                    if (value === 'auto') {
+                      handleDHCPAttribution();
+                    }
+                  }}
+                >
+                  <SelectTrigger
+                    className="bg-black/20 border-white/10 text-white hover:bg-white/5 transition-colors"
+                    style={{
+                      '--ring': accentColor
+                    } as React.CSSProperties}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent
+                    className="backdrop-blur-xl border-white/10 text-white"
+                    style={{
+                      backgroundColor: 'rgba(28, 28, 30, 0.95)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+                    }}
+                  >
+                    <SelectItem
+                      value="auto"
+                      className="focus:bg-white/10 focus:text-white data-[state=checked]:bg-(--active-bg)! data-[state=checked]:text-(--active-text)! cursor-pointer transition-colors"
+                      style={{
+                        '--active-bg': `${accentColor}15`,
+                        '--active-text': accentColor
+                      } as React.CSSProperties}
+                    >
+                      {t('settings.network.automatic')}
+                    </SelectItem>
+                    <SelectItem
+                      value="manual"
+                      className="focus:bg-white/10 focus:text-white data-[state=checked]:bg-(--active-bg)! data-[state=checked]:text-(--active-text)! cursor-pointer transition-colors"
+                      style={{
+                        '--active-bg': `${accentColor}15`,
+                        '--active-text': accentColor
+                      } as React.CSSProperties}
+                    >
+                      {t('settings.network.manual')}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {networkConfigurationLoading && (
+              <div className="bg-white/5 rounded-lg p-4 space-y-3">
+                <div className="flex items-center gap-3 py-4 px-3">
+                  <RefreshCw className="w-5 h-5 text-white/40 animate-spin" />
+                  <p className="text-sm text-white/60">{t('settings.network.dhcpAttributionProgress')}</p>
+                </div>
+              </div>
+              )}
+
+
+              {!networkConfigurationLoading && (
+              <div className="bg-white/5 rounded-lg p-4 space-y-3">
+                <h4 className="text-white font-medium mb-2">
+                  {networkConfigMode === 'auto'
+                      ? t('settings.network.autoConfigTitle')
+                      : t('settings.network.manualConfigTitle')
+                  }
+                </h4>
+
+                {/* IP Address */}
+                <div>
+                  <label className="text-xs text-white/60 block mb-1">{t('settings.network.ipAddress')}</label>
+                  {networkConfigMode === 'auto' ? (
+                      <div className="text-white text-sm">{networkIP}</div>
+                  ) : (
+                      <GlassInput
+                          value={tempIP}
+                          onChange={(e) => setTempIP(e.target.value)}
+                          placeholder="192.168.1.100"
+                      />
+                  )}
+                </div>
+
+                {/* Subnet Mask */}
+                <div>
+                  <label className="text-xs text-white/60 block mb-1">{t('settings.network.subnetMask')}</label>
+                  {networkConfigMode === 'auto' ? (
+                      <div className="text-white text-sm">{networkSubnetMask}</div>
+                  ) : (
+                      <GlassInput
+                          value={tempSubnetMask}
+                          onChange={(e) => setTempSubnetMask(e.target.value)}
+                          placeholder="255.255.255.0"
+                      />
+                  )}
+                </div>
+
+                {/* Gateway */}
+                <div>
+                  <label className="text-xs text-white/60 block mb-1">{t('settings.network.gateway')}</label>
+                  {networkConfigMode === 'auto' ? (
+                      <div className="text-white text-sm">{networkGateway}</div>
+                  ) : (
+                      <GlassInput
+                          value={tempGateway}
+                          onChange={(e) => setTempGateway(e.target.value)}
+                          placeholder="192.168.1.1"
+                      />
+                  )}
+                </div>
+
+                {/* DNS */}
+                <div>
+                  <label className="text-xs text-white/60 block mb-1">{t('settings.network.dns')}</label>
+                  {networkConfigMode === 'auto' ? (
+                      <div className="text-white text-sm">{networkDNS}</div>
+                  ) : (
+                      <GlassInput
+                          value={tempDNS}
+                          onChange={(e) => setTempDNS(e.target.value)}
+                          placeholder="8.8.8.8"
+                      />
+                  )}
+                </div>
+
+                {/* Save Button for Manual Mode */}
+                {networkConfigMode === 'manual' && (
+                    <div className="pt-2">
+                      <GlassButton
+                          onClick={handleSaveManualConfig}
+                          style={{ backgroundColor: accentColor }}
+                          className="w-full"
+                      >
+                        {t('settings.network.validateConfig')}
+                      </GlassButton>
+                    </div>
+                )}
+              </div>
+              )}
             </div>
           </div>
         </>
