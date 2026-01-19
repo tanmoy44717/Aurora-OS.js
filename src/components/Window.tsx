@@ -42,6 +42,7 @@ function WindowComponent({
   const appConfig = getApp(window.type);
   const contextMenuConfig = appConfig?.contextMenu;
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false); // Added state for smooth resizing
   const [beforeClose, setBeforeClose] = useState<(() => boolean | Promise<boolean>) | null>(null);
 
   // Drag threshold refs
@@ -158,7 +159,9 @@ function WindowComponent({
         setIsDragging(false);
         onUpdateState({ position: { x: d.x, y: d.y } });
       }}
+      onResizeStart={() => setIsResizing(true)}
       onResizeStop={(_e, _direction, ref, _delta, position) => {
+        setIsResizing(false);
         onUpdateState({
           size: {
             width: parseInt(ref.style.width),
@@ -177,11 +180,10 @@ function WindowComponent({
         zIndex: window.zIndex,
         display: 'flex',
         flexDirection: 'column',
-        // Transition for smooth maximize/minimize 
-        // We set to none for standard state to ensure resize/drag is instant
-        transition: window.isMaximized || window.isMinimized
-          ? 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)'
-          : 'none',
+        // Update transition logic: Only disable transition when user is actively dragging or resizing
+        transition: (isDragging || isResizing)
+          ? 'none'
+          : 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
         pointerEvents: window.isMinimized ? 'none' : 'auto',
       }}
       className="absolute"
