@@ -115,11 +115,8 @@ export function Settings({ owner }: { owner?: string }) {
     setWallpaper,
     wifiEnabled,
     setWifiEnabled,
-    bluetoothEnabled,
-    setBluetoothEnabled,
     wifiNetwork,
-    setWifiNetwork,
-    bluetoothDevice,
+
     networkConfigMode,
     setNetworkConfigMode,
     networkIP,
@@ -570,11 +567,8 @@ export function Settings({ owner }: { owner?: string }) {
             accentColor={accentColor}
             wifiEnabled={wifiEnabled}
             setWifiEnabled={setWifiEnabled}
-            bluetoothEnabled={bluetoothEnabled}
-            setBluetoothEnabled={setBluetoothEnabled}
             wifiNetwork={wifiNetwork}
-            setWifiNetwork={setWifiNetwork}
-            bluetoothDevice={bluetoothDevice}
+
             networkConfigMode={networkConfigMode}
             setNetworkConfigMode={setNetworkConfigMode}
             networkIP={networkIP}

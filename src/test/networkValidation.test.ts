@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isValidIP, validateNetworkConfig } from './networkValidation';
+import { isValidIP, validateNetworkConfig } from '../utils/networkValidation';
 
 describe('Network Validation', () => {
   describe('isValidIP', () => {
