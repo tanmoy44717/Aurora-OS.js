@@ -198,3 +198,9 @@ Or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 ### AI Disclosure
 
 This project, "Aurora OS," is human-written, with AI tools assisting in documentation, GitHub integrations, bug testing, and roadmap tracking. As soon as this project is ready for release, all the AI tools will be removed and the generated content (audio, images, etc.) will be human-created.
+---
+
+### Credits
+This project is a repost/fork of the original work by **mental-os**. 
+You can find the original repository here:
+https://github.com/mental-os/Aurora-OS.js
