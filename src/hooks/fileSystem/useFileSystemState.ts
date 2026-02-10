@@ -12,13 +12,16 @@ import {
 import { validateIntegrity } from '../../utils/integrity';
 import { hardReset } from '../../utils/memory';
 
+import { safeParseLocal } from '../../utils/safeStorage';
+import { useDebounce } from '../useDebounce';
+
 const STORAGE_KEY = 'aurora-filesystem';
 
 function loadFileSystem(): FileNode {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const stored = safeParseLocal<FileNode>(STORAGE_KEY);
         if (stored) {
-            let parsed = JSON.parse(stored);
+            let parsed = stored;
             if (checkMigrationNeeded()) {
                 parsed = migrateFileSystem(parsed, initialFileSystem);
             }
@@ -50,12 +53,11 @@ export function useFileSystemState() {
     });
 
     // Persist filesystem changes to localStorage (Debounced)
+    const debouncedFileSystem = useDebounce(fileSystem, 1000);
+
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            saveFileSystemToStorage(fileSystem);
-        }, 1000);
-        return () => clearTimeout(timeoutId);
-    }, [fileSystem]);
+        saveFileSystemToStorage(debouncedFileSystem);
+    }, [debouncedFileSystem]);
 
     const resetFileSystemState = useCallback(() => {
         hardReset();

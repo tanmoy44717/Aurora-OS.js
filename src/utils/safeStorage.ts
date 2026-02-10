@@ -31,7 +31,7 @@ function sanitize(value: any, seen = new WeakSet()): any {
             if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
             try {
                 out[k] = sanitize(value[k], seen);
-            } catch (e) {
+            } catch {
                 out[k] = null;
             }
         });

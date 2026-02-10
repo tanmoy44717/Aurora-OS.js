@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useDebounce } from './useDebounce';
+import { safeParseLocal } from '../utils/safeStorage';
 
 /**
  * A hook for persisting app-specific state to localStorage.
@@ -17,27 +19,27 @@ import { useState, useEffect, useCallback } from 'react';
 export function useAppStorage<T>(appId: string, initialState: T, owner?: string): [T, (value: T | ((prev: T) => T)) => void, () => void] {
     const storageKey = owner ? `aurora-os-app-${appId}-${owner}` : `aurora-os-app-${appId}`;
 
-    // Load initial state from localStorage or use default
+    // Load initial state safely
     const [state, setStateInternal] = useState<T>(() => {
-        try {
-            const stored = localStorage.getItem(storageKey);
-            if (stored) {
-                return JSON.parse(stored) as T;
-            }
-        } catch (e) {
-            console.warn(`Failed to load ${appId} state:`, e);
-        }
-        return initialState;
+        const stored = safeParseLocal<T>(storageKey);
+        // If stored is null (missing or invalid), use initialState
+        return stored !== null ? stored : initialState;
     });
 
-    // Save state to localStorage whenever it changes
+    // Debounce the state value to prevent rapid localStorage writes
+    const debouncedState = useDebounce(state, 500);
+
+    // Save state to localStorage whenever the DEBOUNCED state changes
     useEffect(() => {
         try {
-            localStorage.setItem(storageKey, JSON.stringify(state));
+            // Only save if it's not undefined (though T usually isn't)
+            if (debouncedState !== undefined) {
+                localStorage.setItem(storageKey, JSON.stringify(debouncedState));
+            }
         } catch (e) {
             console.warn(`Failed to save ${appId} state:`, e);
         }
-    }, [state, storageKey, appId]);
+    }, [debouncedState, storageKey, appId]);
 
     // Wrapper for setState that handles both value and function updates
     const setState = useCallback((value: T | ((prev: T) => T)) => {

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { STORAGE_KEYS } from '@/utils/memory';
+import { safeParseLocal } from '@/utils/safeStorage';
 import { SUPPORTED_LOCALES } from '@/i18n/translations';
 import { BRAND, DEFAULT_SYSTEM_MEMORY_GB } from '@/config/systemConfig';
 
@@ -30,7 +31,7 @@ interface AppContextType {
   setDevMode: (enabled: boolean) => void;
   exposeRoot: boolean;
   setExposeRoot: (enabled: boolean) => void;
-  
+
   // System Resources
   totalMemoryGB: number;
   setTotalMemoryGB: (gb: number) => void;
@@ -177,13 +178,12 @@ const getUserKey = (username: string) => `aurora-os-settings-${username}`;
 function loadUserPreferences(username: string, systemDefaults: SystemConfig): UserPreferences {
   try {
     const key = getUserKey(username);
-    const stored = localStorage.getItem(key);
+    const stored = safeParseLocal<UserPreferences>(key);
 
     if (stored) {
       // Merge: Defaults (System) -> Default (Static) -> Stored
       // Note: We use system defaults for performance settings if explicit user override is missing
-      const parsed = JSON.parse(stored);
-      
+
       return {
         ...DEFAULT_PREFERENCES,
         blurEnabled: systemDefaults.blurEnabled,
@@ -191,7 +191,7 @@ function loadUserPreferences(username: string, systemDefaults: SystemConfig): Us
         disableShadows: systemDefaults.disableShadows,
         disableGradients: systemDefaults.disableGradients,
         gpuEnabled: systemDefaults.gpuEnabled,
-        ...parsed 
+        ...stored
       };
     }
 
@@ -209,14 +209,14 @@ function loadUserPreferences(username: string, systemDefaults: SystemConfig): Us
           if (k in legacyParsed) migratedProps[k] = legacyParsed[k];
         });
 
-        const migrated = { 
-            ...DEFAULT_PREFERENCES, 
-            blurEnabled: systemDefaults.blurEnabled,
-            reduceMotion: systemDefaults.reduceMotion,
-            disableShadows: systemDefaults.disableShadows,
-            disableGradients: systemDefaults.disableGradients,
-            gpuEnabled: systemDefaults.gpuEnabled,
-            ...migratedProps 
+        const migrated = {
+          ...DEFAULT_PREFERENCES,
+          blurEnabled: systemDefaults.blurEnabled,
+          reduceMotion: systemDefaults.reduceMotion,
+          disableShadows: systemDefaults.disableShadows,
+          disableGradients: systemDefaults.disableGradients,
+          gpuEnabled: systemDefaults.gpuEnabled,
+          ...migratedProps
         };
         // Save immediately to new key
         localStorage.setItem(key, JSON.stringify(migrated));
@@ -226,22 +226,22 @@ function loadUserPreferences(username: string, systemDefaults: SystemConfig): Us
   } catch (e) {
     console.warn(`Failed to load settings for ${username}:`, e);
   }
-  
+
   // fallback to system defaults
   return {
-      ...DEFAULT_PREFERENCES,
-      blurEnabled: systemDefaults.blurEnabled,
-      reduceMotion: systemDefaults.reduceMotion,
-      disableShadows: systemDefaults.disableShadows,
-      disableGradients: systemDefaults.disableGradients,
+    ...DEFAULT_PREFERENCES,
+    blurEnabled: systemDefaults.blurEnabled,
+    reduceMotion: systemDefaults.reduceMotion,
+    disableShadows: systemDefaults.disableShadows,
+    disableGradients: systemDefaults.disableGradients,
   };
 }
 
 function loadSystemConfig(): SystemConfig {
   try {
-    const stored = localStorage.getItem(SYSTEM_CONFIG_KEY);
+    const stored = safeParseLocal<SystemConfig>(SYSTEM_CONFIG_KEY);
     if (stored) {
-      return { ...DEFAULT_SYSTEM_CONFIG, ...JSON.parse(stored) };
+      return { ...DEFAULT_SYSTEM_CONFIG, ...stored };
     }
 
     // Migration: Check legacy global storage for devMode stuff if not found in new key
@@ -326,24 +326,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setAccentColor = (color: string) => setPreferences(s => ({ ...s, accentColor: color }));
   const setThemeMode = (mode: ThemeMode) => setPreferences(s => ({ ...s, themeMode: mode }));
   const setBlurEnabled = (enabled: boolean) => {
-      setPreferences(s => ({ ...s, blurEnabled: enabled }));
-      if (activeUser === 'root') setSystemConfig(s => ({ ...s, blurEnabled: enabled }));
+    setPreferences(s => ({ ...s, blurEnabled: enabled }));
+    if (activeUser === 'root') setSystemConfig(s => ({ ...s, blurEnabled: enabled }));
   };
   const setReduceMotion = (enabled: boolean) => {
-      setPreferences(s => ({ ...s, reduceMotion: enabled }));
-      if (activeUser === 'root') setSystemConfig(s => ({ ...s, reduceMotion: enabled }));
+    setPreferences(s => ({ ...s, reduceMotion: enabled }));
+    if (activeUser === 'root') setSystemConfig(s => ({ ...s, reduceMotion: enabled }));
   };
   const setDisableShadows = (enabled: boolean) => {
-      setPreferences(s => ({ ...s, disableShadows: enabled }));
-      if (activeUser === 'root') setSystemConfig(s => ({ ...s, disableShadows: enabled }));
+    setPreferences(s => ({ ...s, disableShadows: enabled }));
+    if (activeUser === 'root') setSystemConfig(s => ({ ...s, disableShadows: enabled }));
   };
   const setDisableGradients = (enabled: boolean) => {
-      setPreferences(s => ({ ...s, disableGradients: enabled }));
-      if (activeUser === 'root') setSystemConfig(s => ({ ...s, disableGradients: enabled }));
+    setPreferences(s => ({ ...s, disableGradients: enabled }));
+    if (activeUser === 'root') setSystemConfig(s => ({ ...s, disableGradients: enabled }));
   };
   const setGpuEnabled = (enabled: boolean) => {
-      setPreferences(s => ({ ...s, gpuEnabled: enabled }));
-      if (activeUser === 'root') setSystemConfig(s => ({ ...s, gpuEnabled: enabled }));
+    setPreferences(s => ({ ...s, gpuEnabled: enabled }));
+    if (activeUser === 'root') setSystemConfig(s => ({ ...s, gpuEnabled: enabled }));
   };
   const setWallpaper = (id: string) => setPreferences(s => ({ ...s, wallpaper: id }));
   const setTimeMode = (mode: 'server' | 'local') => setPreferences(s => ({ ...s, timeMode: mode }));
