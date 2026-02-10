@@ -2,15 +2,16 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, s
 import { useAppContext } from '@/components/AppContext';
 import { soundManager } from '@/services/sound';
 import { HeadsUpStack } from '@/components/ui/notifications/HeadsUpToast';
+import { safeParseLocal } from '@/utils/safeStorage';
 
 export interface AppNotification {
   id: string;
   appId: string;
-  owner: string; 
+  owner: string;
   title: string;
   message: string;
-  createdAt: number; 
-  data?: Record<string, unknown>; 
+  createdAt: number;
+  data?: Record<string, unknown>;
   unread: boolean;
 }
 
@@ -40,12 +41,12 @@ const TOAST_DURATION = 4000;
 export function AppNotificationsProvider({ children, onOpenApp }: { children: React.ReactNode, onOpenApp?: (appId: string, data?: Record<string, unknown>, owner?: string) => void }) {
   const { activeUser } = useAppContext();
   const [activeToasts, setActiveToasts] = useState<AppNotification[]>([]);
-  
+
+  // ... imports
+
   const [notifications, setNotifications] = useState<AppNotification[]>(() => {
     try {
-      const raw = localStorage.getItem(storageKeyFor(activeUser));
-      if (!raw) return [];
-      const parsed = JSON.parse(raw) as AppNotification[];
+      const parsed = safeParseLocal<AppNotification[]>(storageKeyFor(activeUser));
       return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
@@ -54,8 +55,7 @@ export function AppNotificationsProvider({ children, onOpenApp }: { children: Re
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(storageKeyFor(activeUser));
-      const parsed = raw ? (JSON.parse(raw) as AppNotification[]) : [];
+      const parsed = safeParseLocal<AppNotification[]>(storageKeyFor(activeUser));
       startTransition(() => {
         setNotifications(Array.isArray(parsed) ? parsed : []);
       });
@@ -75,7 +75,7 @@ export function AppNotificationsProvider({ children, onOpenApp }: { children: Re
   }, [notifications, activeUser]);
 
   const dismissToast = useCallback((id: string) => {
-      setActiveToasts(prev => prev.filter(t => t.id !== id));
+    setActiveToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
   const push = useCallback<AppNotificationsContextType['push']>((n) => {
@@ -89,7 +89,7 @@ export function AppNotificationsProvider({ children, onOpenApp }: { children: Re
       data: n.data,
       unread: true,
     };
-    setNotifications((prev) => [item, ...prev].slice(0, 100)); 
+    setNotifications((prev) => [item, ...prev].slice(0, 100));
     return item;
   }, []);
 
@@ -104,12 +104,12 @@ export function AppNotificationsProvider({ children, onOpenApp }: { children: Re
         message: detail.message,
         data: detail.data
       });
-      
+
       setActiveToasts(prev => [item, ...prev].slice(0, 3)); // Max 3 visible
       // Auto dismiss
       setTimeout(() => dismissToast(item.id), TOAST_DURATION);
 
-      soundManager.play('success'); 
+      soundManager.play('success');
     };
 
     window.addEventListener('aurora-app-notification', handleAppNotification);
@@ -138,11 +138,11 @@ export function AppNotificationsProvider({ children, onOpenApp }: { children: Re
   return (
     <AppNotificationsContext.Provider value={value}>
       {children}
-      <HeadsUpStack 
-        notifications={activeToasts} 
+      <HeadsUpStack
+        notifications={activeToasts}
         onDismiss={dismissToast}
         onOpen={(appId, data, owner) => {
-            if (onOpenApp) onOpenApp(appId, data, owner);
+          if (onOpenApp) onOpenApp(appId, data, owner);
         }}
       />
     </AppNotificationsContext.Provider>

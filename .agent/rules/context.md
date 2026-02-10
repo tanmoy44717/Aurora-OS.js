@@ -74,7 +74,7 @@ trigger: always_on
     - **Display**: Stacking "Heads-Up" toasts (top-right, max 3) + Notification Center (sidebar).
     - **Performance**: High-traffic apps (like Notepad) MUST isolate re-renders by splitting the main editor/content logic into memoized sub-components.
     - **Provider**: Handled via `Sonner` (system) and `AppNotificationsContext` (app-level).
-    - **Global Indicators**: Retro "Hard Drive" LED (Green/Red) in bottom-left, triggered by `localStorage` I/O. Filters out "Soft" reads (e.g., volume) via monkey-patched `memory.ts`.
+    - **Global Indicators**: Retro "Hard Drive" LED (Green/Red) in bottom-left. **Green (Load)**: Triggered by ANY `localStorage.getItem`. **Red (Save)**: Triggered by `localStorage.setItem`. Drivers located in `src/utils/memory.ts`.
 
 6.  **Audio & Metadata System**:
     - **Howler Core**: All system audio (SFX, Music, Ambiance) is managed via `soundManager` (`src/services/sound.ts`).
@@ -149,6 +149,12 @@ trigger: always_on
       - **Persistence**: Remembers last used settings per mode.
     - **Bridge**: `useFullscreen` hook unifies Browser (DOM API) and Electron (IPC) logic.
       - **Detection**: "Bulletproof" multi-check (`window.electron` + UA + process) prevents race conditions.
+
+13. **Storage & Persistence**:
+    - **Core Utility**: `src/utils/safeStorage.ts` -> `safeParseLocal<T>(key)`.
+    - **Security**: **ALWAYS** use `safeParseLocal` instead of `JSON.parse` for reading `localStorage`. Automatically strips `__proto__`, `constructor`, and `prototype` to prevent prototype pollution.
+    - **Performance**: Writes to `localStorage` (e.g., Window moves, Notepad typing) MUST be debounced via `useDebounce` hook (default 500ms) to prevent main-thread freezing and I/O thrashing.
+    - **Keys**: Managed via `STORAGE_KEYS` in `src/utils/memory.ts`. Hierarchical structure (`soft` vs `hard` memory) determines reset behavior.
 
 </architecture_mechanics>
 

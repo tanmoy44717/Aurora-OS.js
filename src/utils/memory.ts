@@ -238,26 +238,23 @@ export function initStorageObserver() {
         window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { op } }));
     };
 
-    localStorage.setItem = function(key: string, value: string) {
+    localStorage.setItem = function (key: string, value: string) {
         dispatch('write');
         return originalSetItem.apply(this, [key, value]);
     };
 
-    localStorage.getItem = function(key: string) {
-        // Only trigger "Load" indicator for Hard Memory reads (Core System Data)
-        // Soft memory (preferences, UI state) reads should be silent to avoid noise
-        if (getMemoryType(key) === 'hard') {
-            dispatch('read');
-        }
+    localStorage.getItem = function (key: string) {
+        // Trigger "Load" indicator for ALL reads (as requested)
+        dispatch('read');
         return originalGetItem.apply(this, [key]);
     };
 
-    localStorage.removeItem = function(key: string) {
+    localStorage.removeItem = function (key: string) {
         dispatch('write');
         return originalRemoveItem.apply(this, [key]);
     };
 
-    localStorage.clear = function() {
+    localStorage.clear = function () {
         dispatch('clear');
         return originalClear.apply(this, []);
     };
