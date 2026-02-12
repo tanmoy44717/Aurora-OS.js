@@ -8,7 +8,7 @@ import startupSound2 from '../assets/sounds/Lo-Fi Girl.mp3';
 // import photo5 from '@/assets/images/wallpaper-lake.avif';
 // import photo6 from '@/assets/images/wallpaper-aurora.avif';
 */
-import startupSound from '@/assets/sounds/Runway Electric.mp3';
+import startupSound from '@/assets/sounds/Runway Electric.opus';
 import photo7 from '@/assets/images/wallpaper-nebula.avif';
 
 
