@@ -19,7 +19,7 @@ trigger: always_on
 **Core**: React 19, TypeScript, Vite, Tailwind CSS (v4), Radix UI.
 **Platform**: Web (PWA) + Desktop (Electron).
 **State**: React Context + `localStorage` persistence (Hierarchical: System Defaults + User Overrides).
-**Config**: `src/config/systemConfig.ts` defines core limits (e.g., Default RAM), **Graphics** (GPU, Blur, Shadows), and **Brand Identity** (Name, Colors, Wallpapers).
+**Config**: `src/config/systemConfig.ts` defines core limits (e.g., Default RAM), **Graphics** (GPU, Blur, Shadows), and **Brand Identity** (Name, Colors, Standardized AVIF Wallpapers).
 
 </tech_stack>
 
@@ -142,7 +142,7 @@ trigger: always_on
       - **Historical Speeds**: Speed tiers based on 802.11 eras: `OPEN` (<1Mbps) < `WEP` (1-5Mbps) < `WPA` (5-15Mbps) < `WPA2` (20-150Mbps) < `WPA3` (150-600+Mbps).
       - **Signal Strength**: Realized speed = `MaxSpeed * (SignalStrength / 100)`. Strength fluctuates dynamically.
     - **Persistence**: Managed via simulated Scan/Connect logic, but network list regenerates on reload (stateless simulation). **Session Data Usage**: Stored in `STORAGE_KEYS.NETWORK_USAGE`.
-    - **UI**: 
+    - **UI**:
       - `InternetApplet` (Tray): Quick actions, visually consistent with system theme.
       - `NetworkSettings` (App): Detailed connection stats (Signal, Security, Speed), Manual IP config, Data Usage tracking.
       - `AppStore`: Download speed simulation.
@@ -185,31 +185,32 @@ trigger: always_on
 - **Docs Sync**: On architecture changes, update `.agent/rules/context.md` & `public/llms-full.txt`.
 - **URL Security**: User-provided URLs (images, media) MUST be sanitized via `getSafeImageUrl(url)` to prevent XSS and satisfy CodeQL taint tracking.
 - **Window Management**: `isElectron` detection MUST use the robust multi-check pattern (`window.electron` + userAgent + process.versions) found in `useFullscreen.ts` to prevent race conditions.
+- **Asset Optimization**: Use modern formats (AVIF) for large assets like wallpapers. Ensure 4:2:0 subsampling and aggressive compression (Quality 45-60) for complex images to minimize build size.
+- **Import Standards**: ALWAYS use the `@` alias for `src` directory imports (e.g., `import { foo } from '@/components/bar'`) to ensure path stability.
 
 </critical_rules>
 
 <codebase_map>
 
-| Path                                   | Component          | Description                                              |
-| :------------------------------------- | :----------------- | :------------------------------------------------------- |
-| `src/components/FileSystemContext.tsx` | **VFS Core**       | Context for all FS operations.                           |
-| `src/utils/fileSystemUtils.ts`         | **VFS Utils**      | `FileNode` types, `initialFileSystem`, permission logic. |
-| `src/components/AppContext.tsx`        | **Session**        | Theme, Wallpapers, Physical User session.                |
-| `src/components/DisplaySettings.tsx`   | **Display**        | Cross-platform display management UI.                    |
-| `src/config/appRegistry.ts`            | **Registry**       | Installed Apps configuration.                            |
-| `src/services/notifications.tsx`       | **Notifications**  | Central service for rich system toasts.                  |
-| `src/services/sound.ts`                | **Sound Manager**  | Global audio state and Howler integration.               |
-| `src/utils/id3Parser.ts`               | **ID3 Parser**     | Binary metadata extractor for MP3 files.                 |
-| `src/components/apps/*`                | **Apps**           | Individual App components (Notepad, Terminal, etc).      |
-| `src/hooks/useAppInstaller.ts`         | **Installer**      | Hook for app install/uninstall/restore logic.            |
-| `src/components/apps/AppStore/`        | **App Store**      | App Store components (AppCard, etc).                     |
-| `src/hooks/useWindowManager.ts`        | **Window Manager** | Handles window state and memory usage gates.             |
-| `src/components/NetworkContext.tsx`    | **Network**        | Global network state and simulation logic.               |
-| `src/hooks/useFullscreen.ts`           | **Display Utils**  | Shared hook for Electron/Browser fullscreen logic.       |
+| Path                                   | Component          | Description                                                 |
+| :------------------------------------- | :----------------- | :---------------------------------------------------------- |
+| `src/components/FileSystemContext.tsx` | **VFS Core**       | Context for all FS operations.                              |
+| `src/utils/fileSystemUtils.ts`         | **VFS Utils**      | `FileNode` types, `initialFileSystem`, permission logic.    |
+| `src/components/AppContext.tsx`        | **Session**        | Theme, Wallpapers, Physical User session.                   |
+| `src/components/DisplaySettings.tsx`   | **Display**        | Cross-platform display management UI.                       |
+| `src/config/appRegistry.ts`            | **Registry**       | Installed Apps configuration.                               |
+| `src/services/notifications.tsx`       | **Notifications**  | Central service for rich system toasts.                     |
+| `src/services/sound.ts`                | **Sound Manager**  | Global audio state and Howler integration.                  |
+| `src/utils/id3Parser.ts`               | **ID3 Parser**     | Binary metadata extractor for MP3 files.                    |
+| `src/components/apps/*`                | **Apps**           | Individual App components (Notepad, Terminal, etc).         |
+| `src/hooks/useAppInstaller.ts`         | **Installer**      | Hook for app install/uninstall/restore logic.               |
+| `src/components/apps/AppStore/`        | **App Store**      | App Store components (AppCard, etc).                        |
+| `src/hooks/useWindowManager.ts`        | **Window Manager** | Handles window state and memory usage gates.                |
+| `src/components/NetworkContext.tsx`    | **Network**        | Global network state and simulation logic.                  |
+| `src/hooks/useFullscreen.ts`           | **Display Utils**  | Shared hook for Electron/Browser fullscreen logic.          |
 | `electron/main.ts`                     | **Electron Main**  | Native window management, splash screen, and backend logic. |
-| `electron/splash.html`                 | **Splash Screen**  | Electron-only splash with real progress milestones.     |
-| `src/test/`                            | **Tests**          | Unit tests for utilities and logic.                      |
-
+| `electron/splash.html`                 | **Splash Screen**  | Electron-only splash with real progress milestones.         |
+| `src/test/`                            | **Tests**          | Unit tests for utilities and logic.                         |
 
 </codebase_map>
 

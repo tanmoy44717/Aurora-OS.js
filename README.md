@@ -109,12 +109,14 @@ If anything feels unclear, open a [discussion](https://github.com/mental-os/Auro
 > Chromium-based browsers (Chrome, Edge, Brave, etc.)
 
 In-browser live-version:
+
 ```bash
 npm install
 npm run dev
 ```
 
 or build it for your native OS:
+
 ```
 npm run electron:build
 ```
@@ -145,6 +147,7 @@ or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 - **Memory**: Optimized to use standardized keys and a tiered priority related to various system functions (user logout, new game, close > continue game, etc.).
 - **Browser**: Improved the pages loading speed mechanism by using the same logic of the App Store (WPA3 is instant, downgrading speed based on the security type of the network, signal strength, etc.).
 - **Network**: Improved statistics and network details display in System Settings > Network.
+- **Build size**: Reduced the build size of the native build by optimizing assets to use modern file formats (such as .avif) and removing unused assets, with ~60% reduction.
 
 ### Fixed
 

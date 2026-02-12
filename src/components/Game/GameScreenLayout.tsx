@@ -1,12 +1,12 @@
 import { ReactNode, useState } from "react";
 import { ShieldCheck, AlertTriangle, Orbit } from "lucide-react";
 import { motion } from "motion/react";
-import pkg from "../../../package.json";
-import { validateIntegrity } from "../../utils/integrity";
-import { ConnectivityBadge } from "../ui/ConnectivityBadge";
-import { useI18n } from "../../i18n/index";
-import { useAppContext } from "../AppContext";
-import background from "../../assets/images/background.png"; // Restored legacy background
+import pkg from "@/../package.json";
+import { validateIntegrity } from "@/utils/integrity";
+import { ConnectivityBadge } from "@/components/ui/ConnectivityBadge";
+import { useI18n } from "@/i18n/index";
+import { useAppContext } from "@/components/AppContext";
+import background from "@/assets/images/wallpaper-nebula.avif"; // Restored legacy background
 
 interface GameScreenLayoutProps {
     children: ReactNode;

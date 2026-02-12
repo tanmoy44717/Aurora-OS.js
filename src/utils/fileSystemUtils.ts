@@ -1,17 +1,15 @@
-import pkg from '../../package.json';
+import pkg from '@/../package.json';
 import { getCoreApps } from '@/config/appRegistry';
 
 /**
 import startupSound2 from '../assets/sounds/Lo-Fi Girl.mp3';
-import photo1 from '../assets/images/image-1.png';
-import photo2 from '../assets/images/image-2.jpg';
-import photo3 from '../assets/images/image-3.jpg';
-import photo4 from '../assets/images/wallpaper-orbit.png';
-import photo5 from '../assets/images/wallpaper-dunes.png';
-import photo6 from '../assets/images/wallpaper-mesh.png';
+
+// import photo4 from '@/assets/images/wallpaper-city.avif';
+// import photo5 from '@/assets/images/wallpaper-lake.avif';
+// import photo6 from '@/assets/images/wallpaper-aurora.avif';
 */
 import startupSound from '@/assets/sounds/Runway Electric.mp3';
-import photo7 from '@/assets/images/background.png';
+import photo7 from '@/assets/images/wallpaper-nebula.avif';
 
 
 export interface FileNode {
@@ -234,13 +232,11 @@ export function createUserHome(username: string, permissions: string = 'drwxr-x-
         const pictures = home.children.find((c: any) => c.name === 'Pictures');
         if (pictures) {
             pictures.children.push(
-                //{ name: 'Waterfall.png', type: 'file', content: photo1, size: 2048000, owner: username, permissions: '-rw-r--r--' },
-                //{ name: 'Mountain.jpg', type: 'file', content: photo2, size: 2048000, owner: username, permissions: '-rw-r--r--' },
-                //{ name: 'Skyline.jpg', type: 'file', content: photo3, size: 5242880, owner: username, permissions: '-rw-r--r--' },
-                //{ name: 'Abstract Orbit.png', type: 'file', content: photo4, size: 567414, owner: username, permissions: '-rw-r--r--' },
-                //{ name: 'Desert Dunes.png', type: 'file', content: photo5, size: 640422, owner: username, permissions: '-rw-r--r--' },
-                //{ name: 'Mesh Gradient.png', type: 'file', content: photo6, size: 762581, owner: username, permissions: '-rw-r--r--' },
-                { name: 'System Background.png', type: 'file', content: photo7, size: 5071833, owner: username, permissions: '-rw-r--r--' }
+
+                //{ name: 'City.avif', type: 'file', content: photo4, size: 452618, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'Lake.avif', type: 'file', content: photo5, size: 532298, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'Aurora.avif', type: 'file', content: photo6, size: 400187, owner: username, permissions: '-rw-r--r--' },
+                { name: 'System Background.avif', type: 'file', content: photo7, size: 299845, owner: username, permissions: '-rw-r--r--' }
             );
         }
 
