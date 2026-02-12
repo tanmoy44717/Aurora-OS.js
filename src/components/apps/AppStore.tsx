@@ -159,16 +159,3 @@ export function AppStore({ owner, onOpenApp }: AppStoreProps) {
     );
 }
 
-import { AppMenuConfig } from '@/types';
-
-export const appStoreMenuConfig: AppMenuConfig = {
-    menus: ['File', 'Edit', 'Store', 'Window', 'Help'],
-    items: {
-        'Store': [
-            { label: 'Reload', labelKey: 'menubar.items.reload', shortcut: '⌘R', action: 'reload' },
-            { type: 'separator' },
-            { label: 'Check for Updates...', labelKey: 'appStore.menu.checkForUpdates', action: 'check-updates' },
-            { label: 'View My Account', labelKey: 'appStore.menu.viewMyAccount', action: 'view-account' }
-        ]
-    }
-};

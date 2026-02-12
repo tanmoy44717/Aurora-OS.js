@@ -288,7 +288,8 @@ ipcMain.handle('get-locale', () => app.getLocale());
 ipcMain.handle('get-battery', async () => {
     try {
         return await si.battery();
-    } catch {
+    } catch (error) {
+        console.error('[Electron] Battery fetch failed:', error);
         return null;
     }
 });

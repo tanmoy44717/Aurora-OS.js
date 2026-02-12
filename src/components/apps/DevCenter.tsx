@@ -872,15 +872,6 @@ export function DevCenter() {
     );
 }
 
-import { AppMenuConfig } from '@/types';
 
-export const devCenterMenuConfig: AppMenuConfig = {
-    menus: ['File', 'Edit', 'View', 'Tools', 'Window', 'Help'],
-    items: {
-        'Tools': [
-            { labelKey: 'devCenter.menu.resetFilesystem', action: 'reset-fs' },
-            { type: 'separator' },
-            { labelKey: 'devCenter.menu.runDiagnostics', action: 'run-diagnostics' }
-        ]
-    }
-};
+
+

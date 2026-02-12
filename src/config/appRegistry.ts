@@ -1,21 +1,36 @@
-import { ComponentType } from 'react';
+import { ComponentType, LazyExoticComponent, lazy } from 'react';
 import { LucideIcon, FolderOpen, Settings, Mail, Calendar, Image, Music, Terminal, Globe, MessageSquare, FileText, Code, ShoppingBag } from 'lucide-react';
-import { FileManager, finderMenuConfig, finderContextMenuConfig } from '../components/FileManager';
-import { Settings as SettingsApp, settingsMenuConfig } from '../components/Settings';
-import { Photos, photosMenuConfig } from '../components/apps/Photos';
-import { Music as MusicApp, musicMenuConfig } from '../components/apps/Music';
-import { Messages, messagesMenuConfig } from '../components/apps/Messages';
-import { Browser, browserMenuConfig } from '../components/apps/Browser';
-import { Terminal as TerminalApp, terminalMenuConfig, terminalContextMenuConfig } from '../components/apps/Terminal';
-import { DevCenter, devCenterMenuConfig } from '../components/apps/DevCenter';
-import { Notepad, notepadMenuConfig } from '../components/apps/Notepad';
-
-import { Calendar as CalendarApp, calendarMenuConfig } from '../components/apps/Calendar';
-import { AppStore as AppStoreComponent, appStoreMenuConfig } from '../components/apps/AppStore';
-import { Mail as MailApp, mailMenuConfig } from '../components/apps/Mail';
-
-
 import { AppMenuConfig, ContextMenuConfig } from '../types';
+
+// Menu Configurations
+import {
+  finderMenuConfig, finderContextMenuConfig,
+  settingsMenuConfig,
+  photosMenuConfig,
+  musicMenuConfig,
+  messagesMenuConfig,
+  browserMenuConfig,
+  terminalMenuConfig, terminalContextMenuConfig,
+  devCenterMenuConfig,
+  notepadMenuConfig,
+  calendarMenuConfig,
+  appStoreMenuConfig,
+  mailMenuConfig
+} from './app-menus';
+
+// Lazy Load Components
+const FileManager = lazy(() => import('@/components/FileManager').then(module => ({ default: module.FileManager })));
+const SettingsApp = lazy(() => import('@/components/Settings').then(module => ({ default: module.Settings })));
+const Photos = lazy(() => import('@/components/apps/Photos').then(module => ({ default: module.Photos })));
+const MusicApp = lazy(() => import('@/components/apps/Music').then(module => ({ default: module.Music })));
+const Messages = lazy(() => import('@/components/apps/Messages').then(module => ({ default: module.Messages })));
+const Browser = lazy(() => import('@/components/apps/Browser').then(module => ({ default: module.Browser })));
+const TerminalApp = lazy(() => import('@/components/apps/Terminal').then(module => ({ default: module.Terminal })));
+const DevCenter = lazy(() => import('@/components/apps/DevCenter').then(module => ({ default: module.DevCenter })));
+const Notepad = lazy(() => import('@/components/apps/Notepad').then(module => ({ default: module.Notepad })));
+const CalendarApp = lazy(() => import('@/components/apps/Calendar').then(module => ({ default: module.Calendar })));
+const AppStoreComponent = lazy(() => import('@/components/apps/AppStore').then(module => ({ default: module.AppStore })));
+const MailApp = lazy(() => import('@/components/apps/Mail').then(module => ({ default: module.Mail })));
 
 export interface AppMetadata {
     id: string;
@@ -28,7 +43,7 @@ export interface AppMetadata {
     iconSolid: string;           // Solid color fallback
     category: 'productivity' | 'media' | 'utilities' | 'development' | 'system';
     isCore: boolean;             // Cannot be uninstalled
-    component: ComponentType<any>;
+    component: ComponentType<any> | LazyExoticComponent<any>;
     dockOrder?: number;          // Order in dock (lower = earlier)
     menu?: AppMenuConfig;        // App-specific menu configuration
     contextMenu?: ContextMenuConfig; // Context menu configuration

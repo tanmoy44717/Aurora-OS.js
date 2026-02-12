@@ -325,16 +325,6 @@ function PhotosInner({ owner, onOpenApp }: { owner?: string, onOpenApp?: (type: 
   );
 }
 
-import { AppMenuConfig } from '../../types';
 
-export const photosMenuConfig: AppMenuConfig = {
-  menus: ['File', 'Edit', 'Image', 'View', 'Window', 'Help'],
-  items: {
-    'Image': [
-      { label: 'Slideshow', labelKey: 'photos.menu.slideshow', action: 'slideshow' },
-      { type: 'separator' },
-      { label: 'Rotate Clockwise', labelKey: 'photos.menu.rotateClockwise', shortcut: '⌘R', action: 'rotate-cw' },
-      { label: 'Rotate Counter Clockwise', labelKey: 'photos.menu.rotateCounterClockwise', shortcut: '⇧⌘R', action: 'rotate-ccw' }
-    ]
-  }
-};
+
+

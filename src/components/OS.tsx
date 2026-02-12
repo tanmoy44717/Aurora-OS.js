@@ -1,21 +1,10 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef, Suspense } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Desktop, DesktopIcon } from '@/components/Desktop';
 import { MenuBar } from '@/components/MenuBar';
 import { Dock } from '@/components/Dock';
 import { Window } from '@/components/Window';
-import { FileManager } from '@/components/FileManager';
-import { Settings } from '@/components/Settings';
-import { Photos } from '@/components/apps/Photos';
-import { Music } from '@/components/apps/Music';
-import { Messages } from '@/components/apps/Messages';
-import { Browser } from '@/components/apps/Browser';
-import { Terminal } from '@/components/apps/Terminal';
-import { DevCenter } from '@/components/apps/DevCenter';
-import { Notepad } from '@/components/apps/Notepad';
-import { Calendar } from '@/components/apps/Calendar';
 import { PlaceholderApp } from '@/components/apps/PlaceholderApp';
-import { AppStore } from '@/components/apps/AppStore';
 import { useAppContext } from '@/components/AppContext';
 import { useFileSystem, type FileSystemContextType } from '@/components/FileSystemContext';
 import { Toaster } from '@/components/ui/sonner';
@@ -26,8 +15,9 @@ import { safeParseLocal } from '@/utils/safeStorage';
 import { useWindowManager } from '@/hooks/useWindowManager';
 import { useI18n } from '@/i18n/index';
 import { AppNotificationsProvider } from '@/components/AppNotificationsContext';
+import { WindowLoading } from '@/components/ui/WindowLoading';
+import { APP_REGISTRY } from '@/config/appRegistry';
 
-import { Mail } from "@/components/apps/Mail.tsx";
 // Load icon positions (supports both pixel and grid formats with migration)
 function loadIconPositions(): Record<string, GridPosition> {
     try {
@@ -71,8 +61,6 @@ export default function OS() {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-
-
 
     const { listDirectory, resolvePath, getNodeAtPath, moveNodeById } = useFileSystem() as unknown as FileSystemContextType;
 
@@ -162,70 +150,63 @@ export default function OS() {
 
     // Helper to generate content
     const getAppContent = useCallback((type: string, data?: any, owner?: string): { content: React.ReactNode, title: string } => {
-        let content: React.ReactNode;
-        let title: string;
-
-        switch (type) {
-            case 'finder':
-                title = 'Finder';
-                content = <FileManager id="template" owner={owner} initialPath={data?.path} onOpenApp={(...args) => openWindowRef.current(...args)} />;
-                break;
-            case 'settings':
-                title = 'System Settings';
-                content = <Settings owner={owner} />;
-                break;
-            case 'photos':
-                title = 'Photos';
-                content = <Photos owner={owner} onOpenApp={(...args) => openWindowRef.current(...args)} />;
-                break;
-            case 'music':
-                title = 'Music';
-                content = (
-                    <Music id="template" owner={owner} initialPath={data?.path} onOpenApp={(...args) => openWindowRef.current(...args)} />
-                );
-                break;
-            case 'messages':
-                title = 'Messages';
-                content = <Messages owner={owner} initialPartner={data?.partner} />;
-                break;
-            case 'mail':
-                title = 'Mail';
-                content = <Mail owner={owner} />;
-                break;
-            case 'browser':
-                title = 'Browser';
-                content = <Browser owner={owner} />;
-                break;
-            case 'terminal':
-                title = 'Terminal';
-                // Need to forward the ref logic if terminal is special
-                content = <Terminal id="template" onLaunchApp={(id, args, owner) => openWindowRef.current(id, { path: args?.[0], timestamp: Date.now() }, owner)} owner={owner} />;
-                break;
-            case 'trash':
-                title = 'Trash';
-                content = <FileManager id="template" owner={owner} initialPath="~/.Trash" onOpenApp={(...args) => openWindowRef.current(...args)} />;
-                break;
-            case 'dev-center':
-                title = 'DEV Center';
-                content = <DevCenter />;
-                break;
-            case 'notepad':
-                title = 'Notepad';
-                content = <Notepad id="template" owner={owner} initialPath={data?.path} />;
-                break;
-            case 'calendar':
-                title = 'Calendar';
-                content = <Calendar owner={owner} />;
-                break;
-            case 'appstore':
-                title = 'App Store';
-                content = <AppStore owner={owner} onOpenApp={(...args) => openWindowRef.current(...args)} />;
-                break;
-            default:
-                title = type.charAt(0).toUpperCase() + type.slice(1);
-                content = <PlaceholderApp title={title} />;
+        // Special Case: Trash (uses Finder)
+        if (type === 'trash') {
+            const Finder = APP_REGISTRY.finder.component;
+            return {
+                title: 'Trash',
+                content: (
+                    <Suspense fallback={<WindowLoading />}>
+                        <Finder id="template" owner={owner} initialPath="~/.Trash" onOpenApp={(type: string, data?: any, owner?: string) => openWindowRef.current(type, data, owner)} />
+                    </Suspense>
+                )
+            };
         }
-        return { content, title };
+
+        const appConfig = APP_REGISTRY[type];
+        if (!appConfig) {
+            const title = type.charAt(0).toUpperCase() + type.slice(1);
+            return { content: <PlaceholderApp title={title} />, title };
+        }
+
+        const Component = appConfig.component;
+        const title = appConfig.name;
+
+        // Construct props dynamically
+        const props: any = { owner };
+
+        // ID="template" for window-instantiated apps that need internal state isolation or unique IDs
+        if (['finder', 'music', 'notepad', 'terminal'].includes(type)) {
+            props.id = 'template';
+        }
+
+        // Common Data Props
+        if (data?.path) props.initialPath = data.path;
+
+        // App-Specific Props
+        if (type === 'messages' && data?.partner) {
+            props.initialPartner = data.partner;
+        }
+
+        // Open App Handlers
+        if (['finder', 'photos', 'music', 'appstore'].includes(type)) {
+            props.onOpenApp = (type: string, data?: any, owner?: string) => openWindowRef.current(type, data, owner);
+        }
+
+        // Terminal Special Handler
+        if (type === 'terminal') {
+            props.onLaunchApp = (id: string, args: any[], owner: string) => 
+                openWindowRef.current(id, { path: args?.[0], timestamp: Date.now() }, owner);
+        }
+
+        return {
+            title,
+            content: (
+                <Suspense fallback={<WindowLoading />}>
+                    <Component {...props} />
+                </Suspense>
+            )
+        };
     }, []); // openWindowRef is stable
 
     // Use Window Manager Hook

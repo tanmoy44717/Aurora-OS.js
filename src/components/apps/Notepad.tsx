@@ -1246,43 +1246,5 @@ export function Notepad({ id, owner, initialPath }: NotepadProps) {
     </div>
   );
 }
-import { AppMenuConfig } from "@/types";
 
-export const notepadMenuConfig: AppMenuConfig = {
-  menus: ["File", "Edit", "Format", "View", "Window", "Help"],
-  items: {
-    File: [
-      { labelKey: "notepad.menu.new", shortcut: "⌘N", action: "new" },
-      { labelKey: "notepad.menu.open", shortcut: "⌘O", action: "open" },
-      { labelKey: "notepad.menu.save", shortcut: "⌘S", action: "save" },
-      { type: "separator" },
-      {
-        labelKey: "notepad.menu.closeTab",
-        shortcut: "⌘W",
-        action: "close-tab",
-      },
-    ],
-    Format: [
-      { labelKey: "notepad.menu.bold", shortcut: "⌘B", action: "format-bold" },
-      {
-        labelKey: "notepad.menu.italic",
-        shortcut: "⌘I",
-        action: "format-italic",
-      },
-      { labelKey: "notepad.menu.list", shortcut: "⌘L", action: "format-list" },
-      { type: "separator" },
-      { labelKey: "notepad.menu.heading1", action: "format-h1" },
-      { labelKey: "notepad.menu.heading2", action: "format-h2" },
-    ],
-    View: [
-      {
-        labelKey: "notepad.menu.togglePreview",
-        shortcut: "⌘P",
-        action: "toggle-preview",
-      },
-      { type: "separator" },
-      { labelKey: "notepad.menu.zoomIn", shortcut: "⌘+", action: "zoom-in" },
-      { labelKey: "notepad.menu.zoomOut", shortcut: "⌘-", action: "zoom-out" },
-    ],
-  },
-};
+

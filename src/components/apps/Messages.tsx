@@ -872,14 +872,3 @@ export function Messages({ owner, initialPartner }: { owner?: string; initialPar
     );
 }
 
-// Menu Configuration
-export const messagesMenuConfig: any = {
-    menus: ['File', 'Edit', 'View', 'Conversations', 'Window', 'Help'],
-    items: {
-        'Conversations': [
-            { label: 'New Message', labelKey: 'messages.menu.newMessage', shortcut: '⌘N', action: 'new-message' },
-            { type: 'separator' },
-            // ...
-        ]
-    }
-};

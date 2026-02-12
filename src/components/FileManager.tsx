@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { ChevronLeft, ChevronRight, FolderOpen, FileText, Download, HardDrive, Search, Grid3x3, List, Monitor, Music, Image, Trash, Trash2, Settings, Home, Clipboard, Info, Scissors, Copy } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FolderOpen, FileText, Download, HardDrive, Search, Grid3x3, List, Monitor, Music, Image, Trash, Trash2, Settings, Home, Info, Scissors, Copy } from 'lucide-react';
 import { notify } from '@/services/notifications';
 import { useAppContext } from '@/components/AppContext';
 import { AppTemplate } from '@/components/apps/AppTemplate';
@@ -75,7 +75,6 @@ function BreadcrumbPill({ name, isLast, accentColor, onClick, onDrop }: Breadcru
   );
 }
 
-import { ContextMenuConfig } from '@/types';
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -85,17 +84,7 @@ import {
   ContextMenuShortcut,
 } from '@/components/ui/context-menu';
 import { renderContextMenuItems } from '@/components/ui/context-menu-utils';
-
-// ... (existing imports)
-
-export const finderContextMenuConfig: ContextMenuConfig = {
-  items: [
-    { type: 'item', labelKey: 'menubar.items.newFolder', label: 'New Folder', action: 'new-folder', icon: FolderOpen },
-    { type: 'item', labelKey: 'menubar.items.paste', label: 'Paste', action: 'paste', disabled: true, icon: Clipboard },
-    { type: 'separator' },
-    { type: 'item', labelKey: 'menubar.items.getInfo', label: 'Get Info', action: 'get-info', icon: Info }
-  ]
-};
+import { finderContextMenuConfig } from '@/config/app-menus';
 
 export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string; initialPath?: string; onOpenApp?: (id: string, args?: any, owner?: string) => void, owner?: string }) {
   const { accentColor, activeUser: desktopUser } = useAppContext();
@@ -1198,34 +1187,3 @@ export function FileManager({ id, initialPath, onOpenApp, owner }: { id: string;
   return <AppTemplate sidebar={fileManagerSidebar} toolbar={toolbar} content={content} minContentWidth={600} />;
 }
 
-import { AppMenuConfig } from '@/types';
-
-export const finderMenuConfig: AppMenuConfig = {
-  menus: ['File', 'Edit', 'View', 'Go', 'Window', 'Help'],
-  items: {
-    'File': [
-      { labelKey: 'menubar.items.newWindow', shortcut: '⌘N', action: 'new-window' },
-      { labelKey: 'menubar.items.newFolder', shortcut: '⇧⌘N', action: 'new-folder' },
-      { type: 'separator' },
-      { labelKey: 'menubar.items.closeWindow', shortcut: '⌘W', action: 'close-window' }
-    ],
-    'Edit': [
-      { labelKey: 'menubar.items.undo', shortcut: '⌘Z', action: 'undo' },
-      { labelKey: 'menubar.items.redo', shortcut: '⇧⌘Z', action: 'redo' },
-      { type: 'separator' },
-      { labelKey: 'menubar.items.cut', shortcut: '⌘X', action: 'cut' },
-      { labelKey: 'menubar.items.copy', shortcut: '⌘C', action: 'copy' },
-      { labelKey: 'menubar.items.paste', shortcut: '⌘V', action: 'paste' },
-      { labelKey: 'menubar.items.selectAll', shortcut: '⌘A', action: 'select-all' }
-    ],
-    'Go': [
-      { labelKey: 'menubar.items.back', shortcut: '⌘[', action: 'go-back' },
-      { labelKey: 'menubar.items.forward', shortcut: '⌘]', action: 'go-forward' },
-      { labelKey: 'menubar.items.enclosingFolder', shortcut: '⌘↑', action: 'go-up' },
-      { type: 'separator' },
-      { labelKey: 'fileManager.places.home', shortcut: '⇧⌘H', action: 'go-home' },
-      { labelKey: 'fileManager.places.desktop', shortcut: '⇧⌘D', action: 'go-desktop' },
-      { labelKey: 'fileManager.places.downloads', shortcut: '⌥⌘L', action: 'go-downloads' }
-    ]
-  }
-};

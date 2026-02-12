@@ -568,21 +568,3 @@ export function Browser({ owner }: { owner?: string }) {
 
   return <AppTemplate toolbar={TabBar} content={content} hasSidebar={false} contentClassName="overflow-hidden" />;
 }
-
-// Menu Configuration
-export const browserMenuConfig = {
-  menus: ['File', 'Edit', 'View', 'Bookmarks', 'History'],
-  items: {
-    'File': [
-      { label: 'New Tab', labelKey: 'browser.menu.newTab', shortcut: '⌘T', action: 'new-tab' },
-      { label: 'Close Tab', labelKey: 'browser.menu.closeTab', shortcut: '⌘W', action: 'close-tab' },
-    ],
-    'Bookmarks': [
-      { label: 'Bookmark This Tab', labelKey: 'browser.menu.bookmark', shortcut: '⌘D', action: 'bookmark' },
-      { label: 'Show All Bookmarks', labelKey: 'browser.menu.showBookmarks', action: 'show-bookmarks' }
-    ],
-    'History': [
-      { label: 'Clear History', labelKey: 'browser.menu.clearHistory', action: 'clear-history' }
-    ]
-  }
-};

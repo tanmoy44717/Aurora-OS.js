@@ -137,6 +137,8 @@ or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 
 ### Improved
 
+- **Bundle Size Optimization**: Reduced build size by ~65% through conversion of all wallpapers to AVIF format (4.5MB → 1.6MB), lazy loading of all applications (code-split into 12 separate chunks), and Electron-specific compression strategy (ASAR maximum compression, removed redundant web-only optimizations).
+- **Battery Applet**: Enhanced with color-coded status indicators (red ≤20%, yellow ≤50%, white >50%) for percentage text and progress bar. Verified real hardware data integration on macOS (voltage, cycle count, battery health).
 - **Window Performance**: Implemented "Safe" closing animations and optimized z-index handling to reduce layout thrashing.
 - **Browser UI**: to match the OS theme and dynamic colors.
 - **Browser's websites**: Improved layout and responsiveness for all the available websites.
@@ -147,7 +149,6 @@ or use the [GitHub Pages](https://mental-os.github.io/Aurora-OS.js) (LIVE DEMO)
 - **Memory**: Optimized to use standardized keys and a tiered priority related to various system functions (user logout, new game, close > continue game, etc.).
 - **Browser**: Improved the pages loading speed mechanism by using the same logic of the App Store (WPA3 is instant, downgrading speed based on the security type of the network, signal strength, etc.).
 - **Network**: Improved statistics and network details display in System Settings > Network.
-- **Build size**: Reduced the build size of the native build by optimizing assets to use modern file formats (such as .avif) and removing unused assets, with ~60% reduction.
 
 ### Fixed
 

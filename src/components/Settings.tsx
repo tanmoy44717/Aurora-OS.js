@@ -1032,19 +1032,3 @@ export function Settings({ owner }: { owner?: string }) {
     />
   );
 }
-
-import { AppMenuConfig } from '../types';
-
-export const settingsMenuConfig: AppMenuConfig = {
-  menus: ['File', 'Edit', 'View', 'Window', 'Help'],
-  items: {
-    'File': [
-      { label: 'Close Window', labelKey: 'menubar.items.closeWindow', shortcut: '⌘W', action: 'close-window' }
-    ],
-    'View': [
-      { label: 'General', labelKey: 'settings.sidebar.general', action: 'view-general' },
-      { label: 'Appearance', labelKey: 'settings.sidebar.appearance', action: 'view-appearance' },
-      { label: 'Display', labelKey: 'settings.sidebar.display', action: 'view-display' }
-    ]
-  }
-};

@@ -9,6 +9,7 @@ import { useI18n } from '@/i18n/index';
 import { useFullscreen } from '@/hooks/useFullscreen';
 import { useAppContext } from '@/components/AppContext';
 import { SUPPORTED_LOCALES } from '@/i18n/translations';
+import { factoryReset } from '@/utils/memory';
 
 interface SettingsModalProps {
     onClose: () => void;
@@ -187,10 +188,8 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         if (confirm(t('game.bios.factoryResetConfirm'))) {
             feedback.click();
             // True Factory Reset: Wipe everything (incl. BIOS)
-            import('@/utils/memory').then(({ factoryReset }) => {
-                factoryReset();
-                setTimeout(() => window.location.reload(), 500);
-            });
+            factoryReset();
+            setTimeout(() => window.location.reload(), 500);
         }
     };
 
