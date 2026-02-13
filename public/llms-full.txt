@@ -20,6 +20,8 @@ trigger: always_on
 **Platform**: Web (PWA) + Desktop (Electron).
 **State**: React Context + `localStorage` persistence (Hierarchical: System Defaults + User Overrides).
 **Config**: `src/config/systemConfig.ts` defines core limits (e.g., Default RAM), **Graphics** (GPU, Blur, Shadows), and **Brand Identity** (Name, Colors, Standardized AVIF Wallpapers).
+**Networking**: Zero-dependency architecture (native `fetch` only). No `axios`.
+
 
 </tech_stack>
 
@@ -89,10 +91,13 @@ trigger: always_on
 7.  **Game Flow & Pre-OS Experience**:
     - **State Machine**: 6-state flow handled by `GameRoot.tsx` (INTRO → MENU → FIRST_BOOT/BOOT → ONBOARDING → GAMEPLAY).
     - **Main Menu**: Video game-style interface with keyboard nav. Includes **Settings** (Tabbed: Display/Audio/System) and **Credits** modals.
+      - **Exit Flow**: Retro terminal-style confirmation modal. Triggers immediate filesystem save (`saveFileSystem`) upon confirmation.
       - **Floating Window**: `DevStatusWindow.tsx` provides persistent system status and contribution CTAs.
     - **Save Detection**: Checks `localStorage.getItem(STORAGE_KEYS.VERSION)` to determine if save exists.
     - **New Game**: Calls `hardReset()` to wipe all `localStorage`, then `resetFileSystem()` for in-memory sync. **Preserves** BIOS settings (GPU/Blur/Motion) via `resetSystemConfig(overrides)`.
-    - **Boot Sequence**: Realistic OS boot animation with dynamic log generation (real `APP_REGISTRY` iteration, authentic tech stack logs), pre-loads OS chunk.
+    - **Boot Sequence**: Realistic OS boot animation with dynamic log generation.
+      - **Dynamic Hardware**: Bridges to Electron (`get-system-info`) to fetch **real** CPU/GPU/RAM specs and weaves them into the boot logs for immersion.
+      - **Pre-load**: Pre-loads OS chunk during boot animation.
     - **Onboarding**: Multi-step wizard (Language → Account → Theme → Finishing) for first-time setup.
       - Supports `Escape` (back/abort) and `Enter` (next) navigation.
       - Creates user via `createUser()`, initializes home directory, sets system creation timestamp.
@@ -141,7 +146,8 @@ trigger: always_on
     - **Simulation**:
       - **Historical Speeds**: Speed tiers based on 802.11 eras: `OPEN` (<1Mbps) < `WEP` (1-5Mbps) < `WPA` (5-15Mbps) < `WPA2` (20-150Mbps) < `WPA3` (150-600+Mbps).
       - **Signal Strength**: Realized speed = `MaxSpeed * (SignalStrength / 100)`. Strength fluctuates dynamically.
-    - **Persistence**: Managed via simulated Scan/Connect logic, but network list regenerates on reload (stateless simulation). **Session Data Usage**: Stored in `STORAGE_KEYS.NETWORK_USAGE`.
+      - **Determinism**: SSID properties (Security, Channel, BSSID) are deterministically generated via hash to ensure consistency across reloads.
+    - **Persistence**: "Known" networks (password-protected ones that were successfully joined) are saved to `STORAGE_KEYS.KNOWN_NETWORKS`. Session Data Usage is stored in `STORAGE_KEYS.NETWORK_USAGE`.
     - **UI**:
       - `InternetApplet` (Tray): Quick actions, visually consistent with system theme.
       - `NetworkSettings` (App): Detailed connection stats (Signal, Security, Speed), Manual IP config, Data Usage tracking.

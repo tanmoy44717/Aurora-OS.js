@@ -31,6 +31,7 @@ export const STORAGE_KEYS = {
     APP_DATA_PREFIX: 'os_app_data_',        // App-specific persistent data (e.g. notes)
     MAIL_DB: 'os_mail_db',                  // Simulated Cloud Mail DB
     MESSAGES_DB: 'os_messages_db',          // Simulated Cloud Messages DB
+    KNOWN_NETWORKS: 'os_networks_db',       // Known Wifi Networks (Security/Pass/BSSID)
 
     // TIER 3: RAM / Session State (Prefix: session_)
     // Wiped on Soft Reset (Logout/Reboot) OR Hard Reset.
@@ -222,7 +223,11 @@ export function initStorageObserver() {
     const originalClear = localStorage.clear;
 
     const dispatch = (op: StorageOperation) => {
-        window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { op } }));
+        // Defer dispatch to avoid "Cannot update component while rendering" errors
+        // when localStorage is accessed during render (e.g. useState initializers)
+        setTimeout(() => {
+            window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { op } }));
+        }, 0);
     };
 
     localStorage.setItem = function (key: string, value: string) {

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useAppContext } from '@/components/AppContext';
-import { resetSessionDataUsage } from '@/utils/memory';
+import { resetSessionDataUsage, STORAGE_KEYS } from '@/utils/memory';
 
 export interface Network {
   id: string;
@@ -14,61 +14,74 @@ export interface Network {
   connected?: boolean;
 }
 
-const NETWORK_NAMES = [
-  'Skynet_Global', 'FBI_Surveillance_Van', 'Free_Wifi_Insecure',
-  'Corp_Internal_Legacy', 'Hidden_Network', 'Linksys-2.4GHz',
-  'NETGEAR42', 'TP-Link_Wireless', 'MyHomeWiFi', 'Apartment_204',
-  'Xfinity_Public', 'ATT-WiFi-9876', 'Verizon_XY23'
-];
+// Removed unused NETWORK_NAMES
 
 interface NetworkCapabilities {
   security: Network['security'];
   maxSpeed: number;
 }
 
-function getNetworkCapabilities(ssid: string): NetworkCapabilities {
-  // 1. Determine Security Type
+const SSID_PREFIXES = ['SkyNet', 'Linksys', 'NETGEAR', 'Xfinity', 'ATT', 'Verizon', 'Free_Wifi', 'Office', 'Apt', 'Guest', 'Cafe', 'Hotel'];
+const SSID_SUFFIXES = ['_5G', '_2.4G', '_Guest', '_Secure', '_Public', '-Ext', '-Pro', '_Plus', '_Ultra'];
+
+// Deterministic pseudo-random number generator based on string seed (djb2 hash)
+function pseudoRandom(seed: string): number {
+  let hash = 5381;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 33) ^ seed.charCodeAt(i);
+  }
+  const reset = hash >>> 0; // Ensure unsigned 32-bit integer
+  return (reset % 1000) / 1000; // Normalizing to 0-1 range
+}
+
+function getNetworkCapabilities(ssid: string, knownNetworks: Record<string, NetworkCapabilities> = {}): NetworkCapabilities {
+  // 1. Check if Known Network (Persistence)
+  if (knownNetworks[ssid]) {
+    return knownNetworks[ssid];
+  }
+
+  // 2. Determine Security Type (Deterministic)
   let security: Network['security'] = 'WPA2'; // Default
 
-  if (ssid.includes('Insecure') || ssid.includes('Public')) {
+  // Use deterministic random value for this SSID
+  const rng = pseudoRandom(ssid);
+
+  if (ssid.toLowerCase().includes('insecure') || ssid.toLowerCase().includes('public') || ssid.toLowerCase().includes('free')) {
     security = 'OPEN';
-  } else if (ssid.includes('Legacy')) {
+  } else if (ssid.toLowerCase().includes('legacy')) {
     security = 'WEP';
-  } else if (ssid.includes('Home')) {
-    security = Math.random() > 0.5 ? 'WPA2' : 'WPA3';
+  } else if (ssid.toLowerCase().includes('home')) {
+    security = rng > 0.5 ? 'WPA2' : 'WPA3';
+  } else if (ssid.includes('Verizon') || ssid.includes('ATT') || ssid.includes('Xfinity') || ssid.includes('T-Mobile')) {
+    // Carrier networks should be modern (WPA2/3)
+    security = rng > 0.3 ? 'WPA3' : 'WPA2';
   } else {
-    // Random distribution for others
-    const rand = Math.random();
-    if (rand < 0.1) security = 'WEP';
-    else if (rand < 0.3) security = 'WPA';
-    else if (rand < 0.7) security = 'WPA2';
+    // Random distribution for others (Deterministic per SSID)
+    if (rng < 0.1) security = 'WEP';
+    else if (rng < 0.3) security = 'WPA';
+    else if (rng < 0.7) security = 'WPA2';
     else security = 'WPA3';
   }
 
-  // 2. Determine Max Speed based on Security (Historical Tiers)
-  // OPEN: < 1 Mbps (Public/Congested)
-  // WEP: 1 - 5 Mbps (802.11b - 1999)
-  // WPA: 5 - 15 Mbps (802.11g - 2003)
-  // WPA2: 20 - 150 Mbps (802.11n/ac - 2009/2013)
-  // WPA3: 150 - 600+ Mbps (802.11ax - 2019)
+  // 3. Determine Max Speed based on Security (Historical Tiers)
+  const speedRng = pseudoRandom(ssid + '_speed');
 
   let maxSpeed = 0;
   switch (security) {
     case 'OPEN':
-      // Bumped min to 1.0 to ensure >0.1 MB/s even at lower signal
-      maxSpeed = Math.random() * 1.5 + 1.0; // 1.0 - 2.5 Mbps
+      maxSpeed = speedRng * 1.5 + 1.0; // 1.0 - 2.5 Mbps
       break;
     case 'WEP':
-      maxSpeed = Math.random() * 4 + 1; // 1 - 5 Mbps
+      maxSpeed = speedRng * 4 + 1; // 1 - 5 Mbps
       break;
     case 'WPA':
-      maxSpeed = Math.random() * 10 + 5; // 5 - 15 Mbps
+      maxSpeed = speedRng * 10 + 5; // 5 - 15 Mbps
       break;
     case 'WPA2':
-      maxSpeed = Math.floor(Math.random() * 130) + 20; // 20 - 150 Mbps
+      maxSpeed = Math.floor(speedRng * 130) + 20; // 20 - 150 Mbps
       break;
     case 'WPA3':
-      maxSpeed = Math.floor(Math.random() * 450) + 150; // 150 - 600 Mbps
+      maxSpeed = Math.floor(speedRng * 450) + 150; // 150 - 600 Mbps
       break;
   }
 
@@ -96,23 +109,66 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   const [isScanning, setIsScanning] = useState(false);
   const [availableNetworks, setAvailableNetworks] = useState<Network[]>([]);
 
+  const [knownNetworks, setKnownNetworks] = useState<Record<string, NetworkCapabilities>>({});
+
+  // Load known networks from storage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.KNOWN_NETWORKS);
+      if (stored) {
+        setKnownNetworks(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Failed to load known networks', e);
+    }
+  }, []);
+
+  const generateRandomSSID = useCallback(() => {
+    const prefix = SSID_PREFIXES[Math.floor(Math.random() * SSID_PREFIXES.length)];
+    const suffix = SSID_SUFFIXES[Math.floor(Math.random() * SSID_SUFFIXES.length)];
+    const num = Math.floor(Math.random() * 999);
+    // 30% chance of no suffix, 30% chance of suffix, 40% chance of number
+    const rand = Math.random();
+    if (rand < 0.3) return `${prefix}-${num}`;
+    if (rand < 0.6) return `${prefix}${suffix}`;
+    return `${prefix}-${num}${suffix}`;
+  }, []);
+
   // Generate initial mock networks
   const generateNetworks = useCallback(() => {
     // Always include the currently connected network if wifi is enabled and we have one
     const connectedSsid = wifiEnabled ? wifiNetwork : null;
+    const currentKnown = { ...knownNetworks }; // Local copy for this generation cycle
 
     // Select random networks
     const count = Math.floor(Math.random() * 3) + 4; // 4-6 networks
-    const shuffled = [...NETWORK_NAMES].sort(() => Math.random() - 0.5);
-    const selectedNames = shuffled.slice(0, count);
 
-    // If connected network is not in random selection, add it
-    if (connectedSsid && !selectedNames.includes(connectedSsid)) {
-      selectedNames.unshift(connectedSsid);
+    const selectedNames: string[] = [];
+
+    // 1. Add connected network
+    if (connectedSsid) {
+      selectedNames.push(connectedSsid);
+    }
+
+    // 2. Add some known networks (if in range)
+    const knownKeys = Object.keys(currentKnown).filter(k => k !== connectedSsid);
+    // Shuffle known keys
+    knownKeys.sort(() => Math.random() - 0.5);
+    // Add 0-2 known networks
+    const knownToAdd = knownKeys.slice(0, Math.floor(Math.random() * 2));
+    selectedNames.push(...knownToAdd);
+
+    // 3. Fill the rest with dynamic random networks
+    while (selectedNames.length < count) {
+      const newSsid = generateRandomSSID();
+      if (!selectedNames.includes(newSsid)) {
+        selectedNames.push(newSsid);
+      }
     }
 
     return selectedNames.map((ssid, index) => {
-      const caps = getNetworkCapabilities(ssid);
+      // Pass knownNetworks so we use stored caps if available
+      const caps = getNetworkCapabilities(ssid, currentKnown);
       const strength = Math.floor(Math.random() * 40) + 60; // 60-100 initial strength
 
       return {
@@ -127,7 +183,7 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
         connected: ssid === connectedSsid
       };
     }) as Network[];
-  }, [wifiEnabled, wifiNetwork]);
+  }, [wifiEnabled, wifiNetwork, knownNetworks, generateRandomSSID]);
 
   // Sync connected status when wifiNetwork changes externally
   useEffect(() => {
@@ -188,7 +244,23 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   const connectToNetwork = useCallback((ssid: string) => {
     setWifiEnabled(true);
     setWifiNetwork(ssid);
-  }, [setWifiEnabled, setWifiNetwork]);
+
+    // Persist Network Attributes
+    const net = availableNetworks.find(n => n.ssid === ssid);
+    if (net) {
+      setKnownNetworks(prev => {
+        const next = {
+          ...prev,
+          [ssid]: {
+            security: net.security,
+            maxSpeed: net.maxSpeed
+          }
+        };
+        localStorage.setItem(STORAGE_KEYS.KNOWN_NETWORKS, JSON.stringify(next));
+        return next;
+      });
+    }
+  }, [setWifiEnabled, setWifiNetwork, availableNetworks]);
 
   const disconnect = useCallback(() => {
     setWifiNetwork('');

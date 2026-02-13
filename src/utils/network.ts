@@ -1,4 +1,15 @@
-export async function checkLatency(url: string = 'https://caravane.digital/favicon.ico'): Promise<number | null> {
+export async function checkLatency(url: string = 'https://caravane.digital/favicon.ico'): Promise<{ system: number | null, caravane: number | null } | null> {
+    // 1. Electron Strategy (Main Process via systeminformation)
+    if (window.electron?.checkConnection) {
+        try {
+            return await window.electron.checkConnection();
+        } catch (e) {
+            console.error('Electron network check failed:', e);
+            return null;
+        }
+    }
+
+    // 2. Web API Strategy (Browser / Fallback)
     const start = performance.now();
     try {
         // Cache-busting to ensure we measure real network latency
@@ -7,7 +18,11 @@ export async function checkLatency(url: string = 'https://caravane.digital/favic
             mode: 'no-cors',
             cache: 'no-store'
         });
-        return Math.round(performance.now() - start);
+        const latency = Math.round(performance.now() - start);
+        return {
+            system: null, // Browser can't do system ping
+            caravane: latency
+        };
     } catch (error) {
         console.error('Ping failed:', error);
         return null;

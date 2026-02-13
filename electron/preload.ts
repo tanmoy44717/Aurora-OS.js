@@ -4,6 +4,8 @@ import { contextBridge, ipcRenderer } from 'electron';
 contextBridge.exposeInMainWorld('electron', {
     getLocale: () => ipcRenderer.invoke('get-locale'),
     getBattery: () => ipcRenderer.invoke('get-battery'),
+    getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
+    checkConnection: () => ipcRenderer.invoke('check-connection'),
     getDisplaySettings: () => ipcRenderer.invoke('get-display-settings'),
     setDisplaySettings: (settings: any) => ipcRenderer.invoke('set-display-settings', settings),
     onDisplayChange: (callback: (settings: any) => void) => {

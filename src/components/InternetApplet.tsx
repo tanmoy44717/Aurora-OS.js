@@ -263,10 +263,15 @@ export function InternetApplet({ onOpenApp }: InternetAppletProps) {
                 className="h-8 text-xs text-white/50 transition-colors gap-1"
                 onClick={() => {
                   setIsOpen(false);
-                  onOpenApp?.('settings');
-                  // Navigate specifically to network section if possible (Settings needs to handle this)
-                  // We'll rely on the user navigating or adding a dispatch event
+
+                  // 1. Handle "Already Open" case
                   window.dispatchEvent(new CustomEvent('aurora-open-settings-section', { detail: 'network' }));
+
+                  // 2. Handle "Not Open Yet" case (Cold Start)
+                  // Settings.tsx checks this key on mount
+                  sessionStorage.setItem('settings-pending-section', 'network');
+
+                  onOpenApp?.('settings');
                 }}
                 style={{
                   backgroundColor: hoveredButton === 'settings' ? accentColor : undefined,

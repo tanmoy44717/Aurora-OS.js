@@ -298,6 +298,64 @@ ipcMain.handle('get-battery', async () => {
     }
 });
 
+ipcMain.handle('check-connection', async () => {
+    try {
+        // 1. Primary Check: System Information (Ping Google DNS 8.8.8.8)
+        const systemLatency = await si.inetLatency('8.8.8.8');
+
+        // 2. Secondary Check / Traffic Generation: Caravane Digital
+        let caravaneLatency: number | null = null;
+        try {
+            const start = Date.now();
+            const response = await fetch('https://caravane.digital/favicon.ico', { signal: AbortSignal.timeout(2000) });
+            if (response.ok) {
+                caravaneLatency = Date.now() - start;
+            }
+        } catch (e) {
+            // Ignore secondary failure
+        }
+
+        return {
+            system: systemLatency,
+            caravane: caravaneLatency
+        };
+    } catch (error) {
+        console.error('[Electron] Connection check failed:', error);
+        return null;
+    }
+});
+
+ipcMain.handle('get-system-info', async () => {
+    try {
+        const [mem, cpu, osInfo, graphics] = await Promise.all([
+            si.mem(),
+            si.cpu(),
+            si.osInfo(),
+            si.graphics()
+        ]);
+
+        return {
+            cpu: {
+                cores: cpu.cores,
+                model: cpu.brand,
+            },
+            memory: {
+                total: mem.total,
+            },
+            os: {
+                platform: osInfo.arch,
+            },
+            gpu: {
+                model: graphics.controllers[0]?.model || 'Generic Display Adapter',
+                vram: graphics.controllers[0]?.vram || 0,
+            }
+        };
+    } catch (error) {
+        console.error('[Electron] System info fetch failed:', error);
+        return null;
+    }
+});
+
 ipcMain.handle('get-display-settings', () => currentSettings);
 
 ipcMain.handle('set-display-settings', (event, settings: DisplaySettings) => {

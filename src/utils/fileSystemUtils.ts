@@ -233,10 +233,10 @@ export function createUserHome(username: string, permissions: string = 'drwxr-x-
         if (pictures) {
             pictures.children.push(
 
-                //{ name: 'City.avif', type: 'file', content: photo4, size: 452618, owner: username, permissions: '-rw-r--r--' },
-                //{ name: 'Lake.avif', type: 'file', content: photo5, size: 532298, owner: username, permissions: '-rw-r--r--' },
-                //{ name: 'Aurora.avif', type: 'file', content: photo6, size: 400187, owner: username, permissions: '-rw-r--r--' },
-                { name: 'System Background.avif', type: 'file', content: photo7, size: 299845, owner: username, permissions: '-rw-r--r--' }
+                //{ name: 'City.jpg', type: 'file', content: photo4, size: 452618, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'Lake.jpg', type: 'file', content: photo5, size: 532298, owner: username, permissions: '-rw-r--r--' },
+                //{ name: 'Aurora.jpg', type: 'file', content: photo6, size: 400187, owner: username, permissions: '-rw-r--r--' },
+                { name: 'System Background.jpg', type: 'file', content: photo7, size: 299845, owner: username, permissions: '-rw-r--r--' }
             );
         }
 

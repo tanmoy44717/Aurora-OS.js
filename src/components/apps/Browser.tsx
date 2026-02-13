@@ -513,7 +513,7 @@ export function Browser({ owner }: { owner?: string }) {
       )}
 
       {/* Website Content */}
-      <div className={cn("flex-1 overflow-y-auto relative h-full", (activeTab.renderedUrl === 'browser://welcome' || (!wifiEnabled || !currentNetwork) && !activeTab.renderedUrl.startsWith('browser://')) ? "bg-transparent" : "bg-white")}>
+      <div className={cn("flex-1 overflow-y-auto relative h-full safe-scroll browser-scrollbar", (activeTab.renderedUrl === 'browser://welcome' || (!wifiEnabled || !currentNetwork) && !activeTab.renderedUrl.startsWith('browser://')) ? "bg-transparent" : "bg-white")}>
         {(!wifiEnabled || !currentNetwork) && !activeTab.renderedUrl.startsWith('browser://') ? (
           <div className="h-full flex items-center justify-center p-4">
             <div
