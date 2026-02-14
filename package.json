@@ -151,7 +151,6 @@
             "productName": "Aurora OS.js",
             "asar": true,
             "compression": "maximum",
-            "artifactName": "${productName}-${version}-${os}-${arch}-${target}.${ext}",
             "copyright": "Copyright ©2026 Dope Pixels & MOONHOUND Studio",
             "electronFuses": {
                   "runAsNode": false,
@@ -180,9 +179,11 @@
                         "portable"
                   ],
                   "icon": "public/icon.ico",
-                  "verifyUpdateCodeSignature": false
+                  "verifyUpdateCodeSignature": false,
+                  "artifactName": "${productName}-${version}-${os}-${arch}-setup.${ext}"
             },
             "nsis": {
+                  "artifactName": "${productName}-${version}-${os}-${arch}-installer.${ext}",
                   "menuCategory": "Dope Pixels",
                   "oneClick": false,
                   "allowToChangeInstallationDirectory": true,
@@ -195,6 +196,9 @@
                   "createDesktopShortcut": true,
                   "createStartMenuShortcut": true
             },
+            "portable": {
+                  "artifactName": "${productName}-${version}-${os}-${arch}-portable.${ext}"
+            },
             "mac": {
                   "target": [
                         "dmg",
@@ -205,7 +209,8 @@
                   "gatekeeperAssess": false,
                   "identity": "-",
                   "darkModeSupport": true,
-                  "category": "public.app-category.simulation-games"
+                  "category": "public.app-category.simulation-games",
+                  "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
             },
             "dmg": {
                   "background": "public/dmg-background.png",
@@ -239,7 +244,8 @@
                   "icon": "public/icon.png",
                   "category": "Game",
                   "synopsis": "Hacking simulator game",
-                  "description": "A high-fidelity OS hacking simulator set in the mental.os() universe."
+                  "description": "A high-fidelity OS hacking simulator set in the mental.os() universe.",
+                  "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
             },
             "electronLanguages": [
                   "en",
